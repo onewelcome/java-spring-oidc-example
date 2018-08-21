@@ -1,10 +1,9 @@
 package com.github.fromi.openidconnect.security;
 
-import static java.util.Arrays.asList;
-import static org.springframework.security.oauth2.common.AuthenticationScheme.form;
-
+import static org.springframework.security.oauth2.common.AuthenticationScheme.header;
 import javax.annotation.Resource;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -13,31 +12,45 @@ import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.security.oauth2.client.OAuth2ClientContext;
 import org.springframework.security.oauth2.client.OAuth2RestOperations;
 import org.springframework.security.oauth2.client.OAuth2RestTemplate;
+import org.springframework.security.oauth2.client.discovery.ProviderConfiguration;
+import org.springframework.security.oauth2.client.discovery.ProviderDiscoveryClient;
 import org.springframework.security.oauth2.client.resource.OAuth2ProtectedResourceDetails;
 import org.springframework.security.oauth2.client.token.grant.code.AuthorizationCodeResourceDetails;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableOAuth2Client;
+import java.util.Arrays;
 
 @Configuration
 @EnableOAuth2Client
 public class OAuth2Client {
-    @Value("${google.oauth2.clientId}")
+    @Value("${onegini.oauth2.clientId}")
     private String clientId;
 
-    @Value("${google.oauth2.clientSecret}")
+    @Value("${onegini.oauth2.clientSecret}")
     private String clientSecret;
 
+    @Value("${onegini.oauth2.issuer}")
+    private String issuer;
+
+    public static ProviderConfiguration providerConfiguration = null;
+
     @Bean
-    // TODO retrieve from https://accounts.google.com/.well-known/openid-configuration ?
     public OAuth2ProtectedResourceDetails googleOAuth2Details() {
-        AuthorizationCodeResourceDetails googleOAuth2Details = new AuthorizationCodeResourceDetails();
-        googleOAuth2Details.setAuthenticationScheme(form);
-        googleOAuth2Details.setClientAuthenticationScheme(form);
-        googleOAuth2Details.setClientId(clientId);
-        googleOAuth2Details.setClientSecret(clientSecret);
-        googleOAuth2Details.setUserAuthorizationUri("https://accounts.google.com/o/oauth2/auth");
-        googleOAuth2Details.setAccessTokenUri("https://www.googleapis.com/oauth2/v3/token");
-        googleOAuth2Details.setScope(asList("openid"));
-        return googleOAuth2Details;
+
+        //Discover endpoints
+        ProviderDiscoveryClient dc = new ProviderDiscoveryClient(issuer);
+        providerConfiguration = dc.discover();
+
+        //setup OAuth
+        AuthorizationCodeResourceDetails conf = new AuthorizationCodeResourceDetails();
+        conf.setAuthenticationScheme(header);
+        conf.setClientAuthenticationScheme(header);
+        conf.setClientId(clientId);
+        conf.setClientSecret(clientSecret);
+        conf.setUserAuthorizationUri(providerConfiguration.getAuthorizationEndpoint().toString());
+        conf.setAccessTokenUri(providerConfiguration.getTokenEndpoint().toString());
+        conf.setScope(Arrays.asList("openid", "profile"));
+
+        return conf;
     }
 
     @SuppressWarnings("SpringJavaAutowiringInspection") // Provided by Spring Boot

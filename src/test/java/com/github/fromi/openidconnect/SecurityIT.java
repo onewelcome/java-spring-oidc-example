@@ -46,6 +46,6 @@ public class SecurityIT {
     public void loginPageRedirectsToGoogle() {
         given().redirects().follow(false).when().get("/login").then()
                 .statusCode(HttpStatus.SC_MOVED_TEMPORARILY)
-                .header("Location", startsWith("https://accounts.google.com/o/oauth2/auth"));
+                .header("Location", startsWith("https://dev-514378.oktapreview.com/oauth2/default/v1/authorize"));
     }
 }

@@ -1,5 +1,6 @@
 package com.github.fromi.openidconnect.security;
 
+import static com.github.fromi.openidconnect.security.OAuth2Client.providerConfiguration;
 import static java.util.Optional.empty;
 import static org.springframework.security.core.authority.AuthorityUtils.NO_AUTHORITIES;
 
@@ -30,7 +31,8 @@ public class OpenIDConnectAuthenticationFilter extends AbstractAuthenticationPro
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response)
             throws AuthenticationException, IOException, ServletException {
-        final ResponseEntity<UserInfo> userInfoResponseEntity = restTemplate.getForEntity("https://www.googleapis.com/oauth2/v2/userinfo", UserInfo.class);
+        //todo: use id token for user info instead of endpoint
+        final ResponseEntity<UserInfo> userInfoResponseEntity = restTemplate.getForEntity(providerConfiguration.getUserInfoEndpoint().toString(), UserInfo.class);
         return new PreAuthenticatedAuthenticationToken(userInfoResponseEntity.getBody(), empty(), NO_AUTHORITIES);
     }
 }

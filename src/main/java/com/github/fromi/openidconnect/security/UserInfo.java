@@ -1,32 +1,33 @@
 package com.github.fromi.openidconnect.security;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class UserInfo {
     private final String id;
     private final String name;
-    private final String givenName;
-    private final String familyName;
-    private final String gender;
-    private final String picture;
-    private final String link;
+//    private final String givenName;
+//    private final String familyName;
+//    private final String locale;
+//    private final String preferred_username;
 
     @JsonCreator
-    public UserInfo(@JsonProperty("id") String id,
-                    @JsonProperty("name") String name,
-                    @JsonProperty("given_name") String givenName,
-                    @JsonProperty("family_name") String familyName,
-                    @JsonProperty("gender") String gender,
-                    @JsonProperty("picture") String picture,
-                    @JsonProperty("link") String link) {
+    public UserInfo(@JsonProperty("sub") String id//,
+                    //@JsonProperty("name") String name,
+                    //@JsonProperty("given_name") String givenName,
+                    //@JsonProperty("family_name") String familyName,
+                    //@JsonProperty("locale") String locale,
+                    //@JsonProperty("preferred_username") String preferred_username
+    ){
         this.id = id;
-        this.name = name;
-        this.givenName = givenName;
-        this.familyName = familyName;
-        this.gender = gender;
-        this.picture = picture;
-        this.link = link;
+        this.name = id;
+        //this.name = name;
+        //this.givenName = givenName;
+        //this.familyName = familyName;
+        //this.locale = locale;
+        //this.preferred_username = preferred_username;
     }
 
     public String getId() {
@@ -37,23 +38,19 @@ public class UserInfo {
         return name;
     }
 
-    public String getGivenName() {
-        return givenName;
-    }
-
-    public String getFamilyName() {
-        return familyName;
-    }
-
-    public String getGender() {
-        return gender;
-    }
-
-    public String getPicture() {
-        return picture;
-    }
-
-    public String getLink() {
-        return link;
-    }
+//    public String getGivenName() {
+//        return givenName;
+//    }
+//
+//    public String getFamilyName() {
+//        return familyName;
+//    }
+//
+//    public String getLocale() {
+//        return locale;
+//    }
+//
+//    public String getPreferred_username() {
+//        return preferred_username;
+//    }
 }
