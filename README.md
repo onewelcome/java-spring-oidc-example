@@ -48,7 +48,7 @@ Run and test the Spring boot application. You should be able to see a page with 
 When you click the link you wil be redirected to authenticate. If everything goes well, you will be returned to a page where
 you see the username value. When you use our UserInfo example this should be the sub value.
             
-#How it works
+# How it works
 If you want to implement this in another project you can take a look at the code and discover how it is structured.
 There are multiple ways and configurations you could use. We try to explain how this example works.
 
