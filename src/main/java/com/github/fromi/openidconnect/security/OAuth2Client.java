@@ -3,7 +3,6 @@ package com.github.fromi.openidconnect.security;
 import static org.springframework.security.oauth2.common.AuthenticationScheme.header;
 import javax.annotation.Resource;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -31,14 +30,13 @@ public class OAuth2Client {
     @Value("${onegini.oauth2.issuer}")
     private String issuer;
 
-    public static ProviderConfiguration providerConfiguration = null;
+    @Bean
+    public ProviderConfiguration getProviderConfiguration(){
+        return new ProviderDiscoveryClient(issuer).discover();
+    }
 
     @Bean
-    public OAuth2ProtectedResourceDetails googleOAuth2Details() {
-
-        //Discover endpoints
-        ProviderDiscoveryClient dc = new ProviderDiscoveryClient(issuer);
-        providerConfiguration = dc.discover();
+    public OAuth2ProtectedResourceDetails googleOAuth2Details(final ProviderConfiguration providerConfiguration) {
 
         //setup OAuth
         AuthorizationCodeResourceDetails conf = new AuthorizationCodeResourceDetails();
@@ -59,7 +57,7 @@ public class OAuth2Client {
 
     @Bean
     @Scope(value = "session", proxyMode = ScopedProxyMode.INTERFACES)
-    public OAuth2RestOperations googleOAuth2RestTemplate() {
-        return new OAuth2RestTemplate(googleOAuth2Details(), oAuth2ClientContext);
+    public OAuth2RestOperations googleOAuth2RestTemplate(final ProviderConfiguration providerConfiguration) {
+        return new OAuth2RestTemplate(googleOAuth2Details(providerConfiguration), oAuth2ClientContext);
     }
 }
