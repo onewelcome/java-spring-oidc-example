@@ -5,9 +5,9 @@ Provider. The example uses a pre made example from github made by [fromi](https:
 ## Clone and configure your IDE
 To get the example up and running just clone and configure it.
 
-Clone this repo: https://github.com/Onegini/java-spring-oicd-example.git
+Clone this repo: https://github.com/Onegini/java-spring-oidc-example.git
 
-`git clone https://github.com/Onegini/java-spring-oicd-example.git`
+`git clone https://github.com/Onegini/java-spring-oidc-example.git`
 
 **Intellij**
 
@@ -17,6 +17,8 @@ The `com.github.fromi.openidconnect.Application` should automatically be found a
 within Intellij.
 
 ## Set up configuration
+
+To configure you'll need three values, see [Configuration](#configuration) heading.
 
 Below is a sample some configuration for Spring-Boot to work with the provided sample code. If you have your own configuration, the code will likely
 need to be modified.
@@ -36,12 +38,12 @@ Add the following yml configuration:
 ___Example configuration___
 
       onegini:
-            oauth2:
-              clientId: BA6ABD4E53ADF688F28C8D3B7E8C5D31C2B93F5E0F640A1F764D7EE25A540C4E
-              clientSecret: B44402649A47C90E4850B7B6BD98AAEC40602F7450E721434BE9C056D97C93B0
-              issuer: https://onegini-op.test.onegini.io/oauth/
-          server:
-            port: 8080
+          oauth2:
+            clientId: BA6ABD4E53ADF688F28C8D3B7E8C5D31C2B93F5E0F640A1F764D7EE25A540C4E
+            clientSecret: B44402649A47C90E4850B7B6BD98AAEC40602F7450E721434BE9C056D97C93B0
+            issuer: https://onegini-op.test.onegini.io/oauth/
+        server:
+          port: 8080
                 
 ## Run and test
 Run and test the Spring boot application. You should be able to see a page with a hyperlink _Go to some secured resource_.
@@ -53,9 +55,10 @@ If you want to implement this in another project you can take a look at the code
 There are multiple ways and configurations you could use. We try to explain how this example works.
 
 ## Configuration
-The configuration we set up is used inside `OAuth2Client`. You'll need to register your application to get a `clientId`
-and a `clientSecret`. Also you need to know the `issuer` url where the OP resides. These configurations are usually
-provided by us, if you do not have them or you need to register a new client please ask the administrator.
+The configuration we set up is used inside `OAuth2Client`. You'll need a running instance of the [Token Server][ts] (TS). 
+The TS should have an OIDC Web Client registered ([see docs][ts-oidc]) to become a OP. The OP will have a `clientId` and a 
+`clientSecret` and an `issuer` url where the OP resides. These configurations are usually provided by us, if you do not have 
+them or you need to register a new client please ask the TS administrator.
 
 ## OAuth2Client
 This configures the OAuth flow inside the spring framework. It uses discovery to find the endpoints used by the OAuth flow.
@@ -77,3 +80,6 @@ In this example we only use the sub value, but you can use any value configured 
 ## Security configuration
 In here we configure the security filters used to authorize and authenticate the controllers of our application. 
 Within spring there are multiple ways to do this, use whatever method you prefer.
+
+[ts]: https://docs.onegini.com/msp/token-server/8.2.0/index.html
+[ts-oidc]: https://docs.onegini.com/msp/token-server/8.2.0-SNAPSHOT/topics/oidc/configuration/configuration.html
