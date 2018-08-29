@@ -1,0 +1,7 @@
+onegini:
+  oauth2:
+    clientId: [clientId]
+    clientSecret: [clientSecret]
+    issuer: [oneginiTokenServer]
+server:
+  port: [portNumberForYourApplication]
