@@ -1,5 +1,6 @@
 package com.github.fromi.openidconnect.security;
 
+import static com.github.fromi.openidconnect.SampleSecuredController.SECURED_URL;
 import static org.springframework.http.HttpMethod.GET;
 
 import org.springframework.context.annotation.Bean;
@@ -16,29 +17,30 @@ import org.springframework.security.web.authentication.preauth.AbstractPreAuthen
 @EnableWebSecurity
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
-    private final String LOGIN_URL = "/login";
+  private static final String LOGIN_URL = "/login";
 
-    @Bean
-    public AuthenticationEntryPoint authenticationEntryPoint() {
-        return new LoginUrlAuthenticationEntryPoint(LOGIN_URL);
-    }
+  @Bean
+  public AuthenticationEntryPoint authenticationEntryPoint() {
+    return new LoginUrlAuthenticationEntryPoint(LOGIN_URL);
+  }
 
-    @Bean
-    public OpenIDConnectAuthenticationFilter openIdConnectAuthenticationFilter() {
-        return new OpenIDConnectAuthenticationFilter(LOGIN_URL);
-    }
+  @Bean
+  public OpenIDConnectAuthenticationFilter openIdConnectAuthenticationFilter() {
+    return new OpenIDConnectAuthenticationFilter(LOGIN_URL);
+  }
 
-    @Bean
-    public OAuth2ClientContextFilter oAuth2ClientContextFilter() {
-        return new OAuth2ClientContextFilter();
-    }
-    @Override
-    protected void configure(HttpSecurity http) throws Exception {
-        http.addFilterAfter(oAuth2ClientContextFilter(), AbstractPreAuthenticatedProcessingFilter.class)
-                .addFilterAfter(openIdConnectAuthenticationFilter(), OAuth2ClientContextFilter.class)
-                .exceptionHandling().authenticationEntryPoint(authenticationEntryPoint())
-                .and().authorizeRequests()
-                .antMatchers(GET, "/").permitAll()
-                .antMatchers(GET, "/test").authenticated();
-    }
+  @Bean
+  public OAuth2ClientContextFilter oAuth2ClientContextFilter() {
+    return new OAuth2ClientContextFilter();
+  }
+
+  @Override
+  protected void configure(final HttpSecurity http) throws Exception {
+    http.addFilterAfter(oAuth2ClientContextFilter(), AbstractPreAuthenticatedProcessingFilter.class)
+        .addFilterAfter(openIdConnectAuthenticationFilter(), OAuth2ClientContextFilter.class)
+        .exceptionHandling().authenticationEntryPoint(authenticationEntryPoint())
+        .and().authorizeRequests()
+        .antMatchers(GET, "/").permitAll()
+        .antMatchers(GET, SECURED_URL).authenticated();
+  }
 }

@@ -1,7 +1,5 @@
 onegini:
   oauth2:
-    clientId: [clientId]
-    clientSecret: [clientSecret]
-    issuer: [oneginiTokenServer]
-server:
-  port: [portNumberForYourApplication]
+    clientId: openid-client
+    clientSecret: secret
+    issuer: http://localhost:7878/oauth/

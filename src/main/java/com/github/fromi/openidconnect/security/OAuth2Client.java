@@ -1,6 +1,9 @@
 package com.github.fromi.openidconnect.security;
 
 import static org.springframework.security.oauth2.common.AuthenticationScheme.header;
+
+import java.util.Arrays;
+
 import javax.annotation.Resource;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -16,48 +19,47 @@ import org.springframework.security.oauth2.client.discovery.ProviderDiscoveryCli
 import org.springframework.security.oauth2.client.resource.OAuth2ProtectedResourceDetails;
 import org.springframework.security.oauth2.client.token.grant.code.AuthorizationCodeResourceDetails;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableOAuth2Client;
-import java.util.Arrays;
 
 @Configuration
 @EnableOAuth2Client
 public class OAuth2Client {
-    @Value("${onegini.oauth2.clientId}")
-    private String clientId;
+  @Value("${onegini.oauth2.clientId}")
+  private String clientId;
 
-    @Value("${onegini.oauth2.clientSecret}")
-    private String clientSecret;
+  @Value("${onegini.oauth2.clientSecret}")
+  private String clientSecret;
 
-    @Value("${onegini.oauth2.issuer}")
-    private String issuer;
+  @Value("${onegini.oauth2.issuer}")
+  private String issuer;
 
-    @Bean
-    public ProviderConfiguration getProviderConfiguration(){
-        return new ProviderDiscoveryClient(issuer).discover();
-    }
+  @SuppressWarnings("SpringJavaAutowiringInspection") // Provided by Spring Boot
+  @Resource
+  private OAuth2ClientContext oAuth2ClientContext;
 
-    @Bean
-    public OAuth2ProtectedResourceDetails googleOAuth2Details(final ProviderConfiguration providerConfiguration) {
+  @Bean
+  public ProviderConfiguration getProviderConfiguration() {
+    return new ProviderDiscoveryClient(issuer).discover();
+  }
 
-        //setup OAuth
-        AuthorizationCodeResourceDetails conf = new AuthorizationCodeResourceDetails();
-        conf.setAuthenticationScheme(header);
-        conf.setClientAuthenticationScheme(header);
-        conf.setClientId(clientId);
-        conf.setClientSecret(clientSecret);
-        conf.setUserAuthorizationUri(providerConfiguration.getAuthorizationEndpoint().toString());
-        conf.setAccessTokenUri(providerConfiguration.getTokenEndpoint().toString());
-        conf.setScope(Arrays.asList("openid", "profile"));
+  @Bean
+  public OAuth2ProtectedResourceDetails protectedResourceDetails(final ProviderConfiguration providerConfiguration) {
 
-        return conf;
-    }
+    //setup OAuth
+    final AuthorizationCodeResourceDetails conf = new AuthorizationCodeResourceDetails();
+    conf.setAuthenticationScheme(header);
+    conf.setClientAuthenticationScheme(header);
+    conf.setClientId(clientId);
+    conf.setClientSecret(clientSecret);
+    conf.setUserAuthorizationUri(providerConfiguration.getAuthorizationEndpoint().toString());
+    conf.setAccessTokenUri(providerConfiguration.getTokenEndpoint().toString());
+    conf.setScope(Arrays.asList("openid", "profile"));
 
-    @SuppressWarnings("SpringJavaAutowiringInspection") // Provided by Spring Boot
-    @Resource
-    private OAuth2ClientContext oAuth2ClientContext;
+    return conf;
+  }
 
-    @Bean
-    @Scope(value = "session", proxyMode = ScopedProxyMode.INTERFACES)
-    public OAuth2RestOperations googleOAuth2RestTemplate(final ProviderConfiguration providerConfiguration) {
-        return new OAuth2RestTemplate(googleOAuth2Details(providerConfiguration), oAuth2ClientContext);
-    }
+  @Bean
+  @Scope(value = "session", proxyMode = ScopedProxyMode.INTERFACES)
+  public OAuth2RestOperations oAuth2RestOperations(final ProviderConfiguration providerConfiguration) {
+    return new OAuth2RestTemplate(protectedResourceDetails(providerConfiguration), oAuth2ClientContext);
+  }
 }
