@@ -3,9 +3,7 @@ package com.github.fromi.openidconnect.security;
 import static java.util.Optional.empty;
 import static org.springframework.security.core.authority.AuthorityUtils.NO_AUTHORITIES;
 
-import java.io.IOException;
-import java.net.URI;
-import java.security.interfaces.RSAPublicKey;
+import java.text.ParseException;
 import java.util.Date;
 import java.util.Map;
 import java.util.Objects;
@@ -16,25 +14,19 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.CredentialsExpiredException;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.jwt.Jwt;
-import org.springframework.security.jwt.JwtHelper;
-import org.springframework.security.jwt.crypto.sign.RsaVerifier;
 import org.springframework.security.oauth2.client.OAuth2RestOperations;
 import org.springframework.security.oauth2.client.discovery.ProviderConfiguration;
-import org.springframework.security.oauth2.client.http.AccessTokenRequiredException;
 import org.springframework.security.oauth2.client.resource.OAuth2ProtectedResourceDetails;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
-import org.springframework.security.oauth2.common.exceptions.InvalidTokenException;
 import org.springframework.security.oauth2.common.exceptions.OAuth2Exception;
 import org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
 
-import com.auth0.jwk.Jwk;
-import com.auth0.jwk.JwkException;
-import com.auth0.jwk.JwkProvider;
-import com.auth0.jwk.UrlJwkProvider;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.nimbusds.jwt.JWT;
+import com.nimbusds.jwt.JWTClaimsSet;
+import com.nimbusds.jwt.JWTParser;
 
 public class OpenIDConnectAuthenticationFilter extends AbstractAuthenticationProcessingFilter {
 
@@ -59,7 +51,7 @@ public class OpenIDConnectAuthenticationFilter extends AbstractAuthenticationPro
   }
 
   @Override
-  public Authentication attemptAuthentication(final HttpServletRequest request, final HttpServletResponse response) throws IOException {
+  public Authentication attemptAuthentication(final HttpServletRequest request, final HttpServletResponse response) {
 
     //Use ID token to retrieve user info -> when we do this we also verify the ID token
     final OAuth2AccessToken accessToken;
@@ -71,20 +63,22 @@ public class OpenIDConnectAuthenticationFilter extends AbstractAuthenticationPro
     }
 
     // Option 1: Use claim to create UserInfo
+    final String idToken = accessToken.getAdditionalInformation().get("id_token").toString();
     try {
-      final String idToken = accessToken.getAdditionalInformation().get("id_token").toString();
-      final String kid = JwtHelper.headers(idToken).get("kid");
-      final Jwt tokenDecoded = JwtHelper.decodeAndVerify(idToken, verifier(kid));
-      final Map<String, String> authInfo = new ObjectMapper().readValue(tokenDecoded.getClaims(), Map.class);
-      verifyClaims(authInfo);
+      final JWT jwt = JWTParser.parse(idToken);
+      // TODO OAUTH-3116: validate the JWT
+      final JWTClaimsSet jwtClaimsSet = jwt.getJWTClaimsSet();
 
-      final UserInfo user = new UserInfo().setId(authInfo.get("sub")).setName(authInfo.get("sub"));
+      final Map<String, Object> authInfo = jwtClaimsSet.getClaims();
+      // TODO OAUTH-3116: find a way to make them available in the modelMap
+
+      verifyClaims(jwtClaimsSet);
+
+      final UserInfo user = new UserInfo().setId(jwtClaimsSet.getSubject()).setName(jwtClaimsSet.getSubject());
       return new PreAuthenticatedAuthenticationToken(user, empty(), NO_AUTHORITIES);
 
-    } catch (final InvalidTokenException e) {
+    } catch (final ParseException e) {
       throw new BadCredentialsException("Could not obtain user details from token", e);
-    } catch (final JwkException e) {
-      throw new AccessTokenRequiredException(e.getMessage(), details);
     }
 
     // Option 2: Use UserInfo endpoint to retrieve user info
@@ -92,20 +86,17 @@ public class OpenIDConnectAuthenticationFilter extends AbstractAuthenticationPro
     // return new PreAuthenticatedAuthenticationToken(userInfoResponseEntity.getBody(), empty(), NO_AUTHORITIES);
   }
 
-  private RsaVerifier verifier(final String kid) throws JwkException {
-    final JwkProvider provider = new UrlJwkProvider(providerConfiguration.getJwkSetUri());
-    final Jwk jwk = provider.get(kid);
-    return new RsaVerifier((RSAPublicKey) jwk.getPublicKey());
-  }
-
-  private void verifyClaims(final Map claims) {
-    final int exp = (int) claims.get("exp");
-    final Date expireDate = new Date(exp * 1000L);
+  private void verifyClaims(final JWTClaimsSet claims) {
+    final Date expireDate = claims.getExpirationTime();
     final Date now = new Date();
-    if (expireDate.before(now)
-        || !Objects.equals(URI.create(issuer).getHost(), URI.create((String) claims.get("iss")).getHost())
-        || !Objects.equals(clientId, claims.get("aud"))) {
-      throw new RuntimeException("Invalid claims");
+
+    if (expireDate.before(now)) {
+      throw new CredentialsExpiredException("Claim has expired");
+    }
+
+    if (!(Objects.equals(issuer, claims.getIssuer())
+        && claims.getAudience().contains(clientId))) {
+      throw new BadCredentialsException("Invalid claims");
     }
   }
 

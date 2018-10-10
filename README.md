@@ -38,7 +38,7 @@ ___Example configuration___
           oauth2:
             clientId: openid-client
             clientSecret: secret
-            issuer: http://localhost:7878/oauth/
+            issuer: http://localhost:7878/oauth
 
 ## Run and test
 Run the example via the Run configuration in IntelliJ or via the command line: `mvn spring-boot:run`. The Token Server needs to be accessible to start this 
