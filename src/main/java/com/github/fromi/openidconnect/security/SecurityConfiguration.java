@@ -1,11 +1,13 @@
 package com.github.fromi.openidconnect.security;
 
-import static com.github.fromi.openidconnect.SampleSecuredController.SECURED_URL;
-import static org.springframework.http.HttpMethod.GET;
+import static com.github.fromi.openidconnect.IndexController.PAGE_INDEX;
+import static com.github.fromi.openidconnect.LogoutController.PAGE_LOGOUT;
+import static com.github.fromi.openidconnect.SampleSecuredController.PAGE_SECURED;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.oauth2.client.filter.OAuth2ClientContextFilter;
@@ -25,8 +27,8 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
   }
 
   @Bean
-  public OpenIDConnectAuthenticationFilter openIdConnectAuthenticationFilter() {
-    return new OpenIDConnectAuthenticationFilter(LOGIN_URL);
+  public OpenIdConnectAuthenticationFilter openIdConnectAuthenticationFilter() {
+    return new OpenIdConnectAuthenticationFilter(LOGIN_URL);
   }
 
   @Bean
@@ -35,12 +37,26 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
   }
 
   @Override
+  public void configure(final WebSecurity web) {
+    web
+        .ignoring()
+        .antMatchers("/static/**", "/favicon.ico");
+  }
+
+  @Override
   protected void configure(final HttpSecurity http) throws Exception {
     http.addFilterAfter(oAuth2ClientContextFilter(), AbstractPreAuthenticatedProcessingFilter.class)
         .addFilterAfter(openIdConnectAuthenticationFilter(), OAuth2ClientContextFilter.class)
         .exceptionHandling().authenticationEntryPoint(authenticationEntryPoint())
-        .and().authorizeRequests()
-        .antMatchers(GET, "/").permitAll()
-        .antMatchers(GET, SECURED_URL).authenticated();
+        .and()
+        .authorizeRequests()
+        .antMatchers("/", "/logout", "/signout-callback-oidc").permitAll()
+        .antMatchers("/static/**", "/favicon.ico").permitAll()
+        .antMatchers(PAGE_SECURED).authenticated()
+        .and()
+        .logout()
+        .logoutUrl(PAGE_LOGOUT)
+        .logoutSuccessUrl(PAGE_INDEX);
+
   }
 }

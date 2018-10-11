@@ -3,19 +3,27 @@ package com.github.fromi.openidconnect;
 import java.security.Principal;
 
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.ModelMap;
+import org.springframework.web.bind.annotation.GetMapping;
 
-@RestController
+import com.github.fromi.openidconnect.model.TokenDetails;
+
+@Controller
 public class SampleSecuredController {
 
-  public static final String SECURED_URL = "/secured";
+  public static final String PAGE_SECURED = "/secured";
 
-  @RequestMapping(SECURED_URL)
-  public Object userInfo(final Principal principal) {
+  @GetMapping(PAGE_SECURED)
+  public String userInfo(final Principal principal, final ModelMap modelMap) {
+
     if (principal instanceof PreAuthenticatedAuthenticationToken) {
-      return ((PreAuthenticatedAuthenticationToken) principal).getPrincipal();
+      final PreAuthenticatedAuthenticationToken authenticationToken = (PreAuthenticatedAuthenticationToken) principal;
+      final TokenDetails tokenDetails = (TokenDetails) authenticationToken.getDetails();
+      modelMap.addAttribute("jwtClaimsSet", tokenDetails.getJwtClaimsSet());
+      modelMap.addAttribute("userInfo", authenticationToken.getPrincipal());
     }
-    return principal;
+
+    return "secured";
   }
 }

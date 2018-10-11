@@ -1,0 +1,9 @@
+/* Wrapping element */
+/* Set some basic padding to keep content from hitting the edges */
+.body-content {
+  padding: 40px 15px;
+}
+
+th[scope=row] {
+  font-weight: normal
+}
