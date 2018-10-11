@@ -1,4 +1,4 @@
-package com.github.fromi.openidconnect.security;
+package com.onegini.oidc.security;
 
 import javax.annotation.Resource;
 

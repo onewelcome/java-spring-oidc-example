@@ -55,11 +55,11 @@ returned to a page where you see user information and the claims from the ID tok
 ## How it works
 
 ### OAuth2Client
-[OAuth2Client.java](src/main/java/com/github/fromi/openidconnect/security/OAuth2Client.java) configures the OAuth flow for Spring Security. It uses discovery 
+[OAuth2Client.java](src/main/java/com/onegini/oidc/security/OAuth2Client.java) configures the OAuth flow for Spring Security. It uses discovery 
 to find the endpoints used by the OAuth flow. By default the scopes "openid" and "profile" are requested.
 
 ### OpenIdConnectAuthenticationFilter
-[OpenIdConnectAuthenticationFilter.java](src/main/java/com/github/fromi/openidconnect/security/OpenIdConnectAuthenticationFilter.java) is the filter used during
+[OpenIdConnectAuthenticationFilter.java](src/main/java/com/onegini/oidc/security/OpenIdConnectAuthenticationFilter.java) is the filter used during
 authentication. It adds user information during authentication Depending on your environment this could be different. There are mainly two ways to do this:
 
 In the code we show both ways. The second way is commented out. The first one also covers the ID token validation.
@@ -69,27 +69,27 @@ Depending on the scope and configuration used in your environment the user data 
 In this example we use the `sub` and the `name` value, but you can use any value configured for your environment.
 
 ### OpenIdTokenValidationWrapper
-[OpenIdTokenValidationWrapper.java](src/main/java/com/github/fromi/openidconnect/security/OpenIdTokenValidatorWrapper.java) validates the ID token. It validates
+[OpenIdTokenValidationWrapper.java](src/main/java/com/onegini/oidc/security/OpenIdTokenValidatorWrapper.java) validates the ID token. It validates
 its signature against the keys that are returned by the JWKS endpoint of the OP. It verifies that the claims are from the issuer, intended for the correct 
 audience and that they have not expired.
 
 ### UserInfo
-The [UserInfo.java](src/main/java/com/github/fromi/openidconnect/model/UserInfo.java) is a POJO for user information. It is used as user principal in Spring 
+The [UserInfo.java](src/main/java/com/onegini/oidc/model/UserInfo.java) is a POJO for user information. It is used as user principal in Spring 
 Security.
 
 ### TokenDetails
-The [TokenDetails.java](src/main/java/com/github/fromi/openidconnect/model/TokenDetails.java) is a POJO for additional details about the token used during 
+The [TokenDetails.java](src/main/java/com/onegini/oidc/model/TokenDetails.java) is a POJO for additional details about the token used during 
 authentication. In this project it contains the claims of the JWT.
 
 ### Security configuration
-In [SecurityConfiguration.java](src/main/java/com/github/fromi/openidconnect/security/SecurityConfiguration.java) we configure the Spring Security filters used 
+In [SecurityConfiguration.java](src/main/java/com/onegini/oidc/security/SecurityConfiguration.java) we configure the Spring Security filters used 
 to authenticate the user and authorize the controllers of our application.
 
 ### SampleSecuredController
-The [SampleSecuredController.java](src/main/java/com/github/fromi/openidconnect/SampleSecuredController.java) has a protected endpoint `/secured`. It populates
+The [SampleSecuredController.java](src/main/java/com/onegini/oidc/SampleSecuredController.java) has a protected endpoint `/secured`. It populates
 the modelMap for the template that shows the user information, ID token and the claims.
 
 ### LogoutController
-Thie [LogoutController.java](src/main/java/com/github/fromi/openidconnect/LogoutController.java) contains the logic to end the session. The user first comes to
+Thie [LogoutController.java](src/main/java/com/onegini/oidc/LogoutController.java) contains the logic to end the session. The user first comes to
 the `/logout` endpoint. If the user was logged in via an ID token, they are redirected to the end session endpoint of the OP. The OP ends the session of the 
 user and redirects it back to `http://localhost:8080/signout-callback-oidc`. Then the user is logged out in Spring Security and redirected to the home page.

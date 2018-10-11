@@ -1,4 +1,4 @@
-package com.github.fromi.openidconnect;
+package com.onegini.oidc;
 
 import java.security.Principal;
 import java.util.Map;
@@ -22,8 +22,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import com.github.fromi.openidconnect.config.ApplicationProperties;
-import com.github.fromi.openidconnect.model.UserInfo;
+import com.onegini.oidc.config.ApplicationProperties;
+import com.onegini.oidc.model.UserInfo;
 
 @Controller
 public class LogoutController {

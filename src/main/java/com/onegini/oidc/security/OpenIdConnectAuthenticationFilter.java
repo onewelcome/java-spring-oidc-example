@@ -1,4 +1,4 @@
-package com.github.fromi.openidconnect.security;
+package com.onegini.oidc.security;
 
 import static java.util.Optional.empty;
 import static org.springframework.security.core.authority.AuthorityUtils.NO_AUTHORITIES;
@@ -19,8 +19,8 @@ import org.springframework.security.oauth2.common.exceptions.OAuth2Exception;
 import org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
 
-import com.github.fromi.openidconnect.model.TokenDetails;
-import com.github.fromi.openidconnect.model.UserInfo;
+import com.onegini.oidc.model.TokenDetails;
+import com.onegini.oidc.model.UserInfo;
 import com.nimbusds.jwt.JWT;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.JWTParser;

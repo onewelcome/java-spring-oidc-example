@@ -1,4 +1,4 @@
-package com.github.fromi.openidconnect.config;
+package com.onegini.oidc.config;
 
 import javax.validation.constraints.NotBlank;
 

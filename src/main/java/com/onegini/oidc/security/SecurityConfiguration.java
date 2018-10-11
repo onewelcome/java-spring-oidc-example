@@ -1,8 +1,4 @@
-package com.github.fromi.openidconnect.security;
-
-import static com.github.fromi.openidconnect.IndexController.PAGE_INDEX;
-import static com.github.fromi.openidconnect.LogoutController.PAGE_LOGOUT;
-import static com.github.fromi.openidconnect.SampleSecuredController.PAGE_SECURED;
+package com.onegini.oidc.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -14,6 +10,10 @@ import org.springframework.security.oauth2.client.filter.OAuth2ClientContextFilt
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.authentication.preauth.AbstractPreAuthenticatedProcessingFilter;
+
+import com.onegini.oidc.IndexController;
+import com.onegini.oidc.LogoutController;
+import com.onegini.oidc.SampleSecuredController;
 
 @Configuration
 @EnableWebSecurity
@@ -52,11 +52,11 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         .authorizeRequests()
         .antMatchers("/", "/logout", "/signout-callback-oidc").permitAll()
         .antMatchers("/static/**", "/favicon.ico").permitAll()
-        .antMatchers(PAGE_SECURED).authenticated()
+        .antMatchers(SampleSecuredController.PAGE_SECURED).authenticated()
         .and()
         .logout()
-        .logoutUrl(PAGE_LOGOUT)
-        .logoutSuccessUrl(PAGE_INDEX);
+        .logoutUrl(LogoutController.PAGE_LOGOUT)
+        .logoutSuccessUrl(IndexController.PAGE_INDEX);
 
   }
 }

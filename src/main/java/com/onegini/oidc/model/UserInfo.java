@@ -1,4 +1,4 @@
-package com.github.fromi.openidconnect.model;
+package com.onegini.oidc.model;
 
 public class UserInfo {
 

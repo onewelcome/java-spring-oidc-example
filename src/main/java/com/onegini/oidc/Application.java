@@ -1,4 +1,4 @@
-package com.github.fromi.openidconnect;
+package com.onegini.oidc;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;

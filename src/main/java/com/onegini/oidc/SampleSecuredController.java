@@ -1,4 +1,4 @@
-package com.github.fromi.openidconnect;
+package com.onegini.oidc;
 
 import java.security.Principal;
 
@@ -7,7 +7,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.GetMapping;
 
-import com.github.fromi.openidconnect.model.TokenDetails;
+import com.onegini.oidc.model.TokenDetails;
 
 @Controller
 public class SampleSecuredController {

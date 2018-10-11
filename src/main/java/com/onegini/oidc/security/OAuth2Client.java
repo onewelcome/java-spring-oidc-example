@@ -1,4 +1,4 @@
-package com.github.fromi.openidconnect.security;
+package com.onegini.oidc.security;
 
 import static org.springframework.security.oauth2.common.AuthenticationScheme.header;
 
