@@ -28,7 +28,7 @@ import com.nimbusds.jwt.JWTParser;
 public class OpenIdConnectAuthenticationFilter extends AbstractAuthenticationProcessingFilter {
 
   @Resource
-  private OAuth2RestOperations restTemplate;
+  private OAuth2RestOperations oAuth2RestOperations;
   @Resource
   private OAuth2ProtectedResourceDetails details;
   @Resource
@@ -60,7 +60,7 @@ public class OpenIdConnectAuthenticationFilter extends AbstractAuthenticationPro
     final OAuth2AccessToken accessToken;
 
     try {
-      accessToken = restTemplate.getAccessToken();
+      accessToken = oAuth2RestOperations.getAccessToken();
     } catch (final OAuth2Exception e) {
       throw new AccessTokenRequiredException("Could not obtain access token", details, e);
     }
