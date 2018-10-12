@@ -3,7 +3,7 @@ This example covers how to implement and configure a Java Spring project to work
 [spring-google-openidconnect](https://github.com/fromi/spring-google-openidconnect).
 
 ## Clone and configure your IDE
-To get the example up and running clone and configure it.
+To get the example up and running, first you'll need to clone it:
 
 `git clone https://github.com/Onegini/java-spring-oidc-example.git`
 
@@ -59,11 +59,9 @@ to find the endpoints used by the OAuth flow. By default the scopes "openid" and
 
 ### OpenIdConnectAuthenticationFilter
 [OpenIdConnectAuthenticationFilter.java](src/main/java/com/onegini/oidc/security/OpenIdConnectAuthenticationFilter.java) is the filter used during
-authentication. It adds user information during authentication Depending on your environment this could be different. There are mainly two ways to do this:
+authentication. It obtains the ID token and creates the principal using some of the data.
 
-In the code we show both ways. The second way is commented out. The first one also covers the ID token validation.
-
-Depending on the scope and configuration used in your environment the user data returned in the ID token will differ. Adjust the 
+Depending on the scope and configuration used in your environment, the user data returned in the ID token will differ. Adjust the 
 `OpenIDConnectAuthenticationFilter` class accordingly to match the correct fields.
 In this example we use the `sub` and the `name` value, but you can use any value configured for your environment.
 
