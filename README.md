@@ -9,10 +9,9 @@ To get the example up and running clone and configure it.
 
 ### IntelliJ
 
-Go to `File->Open` and open the spring-google-openidconnect/pom.xml, open it as a project.
+Go to `File->Open` and open the file `java-spring-oidc-example/pom.xml`, open it as a project.
 
-The `com.github.fromi.openidconnect.Application` should automatically be found and set up a run configuration for you so you can run it
-within IntelliJ.
+The class `com.onegini.oidc.Application` should automatically be found and set up a run configuration for you so you can run it within IntelliJ.
 
 ## Onegini Configuration
 You'll need to properly setup your client using the Onegini Admin panel before you can begin testing.
