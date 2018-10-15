@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html th:lang-xmllang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+  <title>Secured page</title>
+</head>
+
+<th:block layout:fragment="content">
+  <div class="row">
+    <div class="col-sm-12">
+
+      <div class="page-header">
+        <h1>Secured page</h1>
+      </div>
+
+      <dl th:if="${userInfo}">
+        <dt>User identifier</dt>
+        <dd th:text="${userInfo.id}"></dd>
+        <dt>Name</dt>
+        <dd th:text="${userInfo.name}"></dd>
+        <dt>Your id token</dt>
+        <dd>
+          <pre th:text="${userInfo.idToken}"></pre>
+        </dd>
+      </dl>
+
+      <div class="table-responsive" th:if="${jwtClaimsSet}">
+        <table class="table">
+          <caption>Your claims inside the id token:</caption>
+          <thead>
+          <tr>
+            <th scope="col">Claim</th>
+            <th scope="col">Value</th>
+          </tr>
+          </thead>
+          <tbody>
+          <th:block th:each="claim : ${jwtClaimsSet.claims}">
+            <tr>
+              <td th:text="${claim.key}"></td>
+              <td th:text="${claim.value}"></td>
+            </tr>
+          </th:block>
+          </tbody>
+        </table>
+
+      </div>
+    </div>
+  </div>
+</th:block>
+
+</html>

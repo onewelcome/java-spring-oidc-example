@@ -1,5 +1,0 @@
-onegini:
-  oauth2:
-    clientId: openid-client
-    clientSecret: secret
-    issuer: http://localhost:7878/oauth/
