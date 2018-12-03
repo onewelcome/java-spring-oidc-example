@@ -81,6 +81,7 @@ audience and that they have not expired.
 encrypted by freshly generated CEK (Content Encryption Key) that is encrypted by one of asymetric key. Public parts of those keys are share by JWKS endpoint 
 available on this example application.
 See [WellKnownJwksController.java](src/main/java/com/onegini/oidc/WellKnownJwksController.java) for more information.
+See also [JSON Web Encryption (JWE) (https://tools.ietf.org/html/rfc7516)] for more information.
 
 ### EncryptionAlgorithms
 The [EncryptionAlgorithms.java](src/main/java/com/onegini/oidc/model/EncryptionAlgorithms.java) contains all algorithms that could be used by OP to encrypt the 
@@ -108,10 +109,10 @@ the `/logout` endpoint. If the user was logged in via an ID token, they are redi
 user and redirects it back to `http://localhost:8080/signout-callback-oidc`. Then the user is logged out in Spring Security and redirected to the home page.
 
 ### WellKnownJwksController
-The [WellKnownJwksController.java](src/main/java/com/onegini/oidc/WellKnownJwksController.java) is responsible to return a JWKS list (for encryption purpose).
-It returns only that kind of keys that are supported on OP. However it's only an example and in production application there is strictly required to store keys 
-in persistence storage and make a key rotation. Please keep in mind that OP gets the first key that matched its criteria so returning obsolete key on before 
-fresh one is a mistake.
+The [WellKnownJwksController.java](src/main/java/com/onegini/oidc/WellKnownJwksController.java) is responsible for returning the JWKS list (for encryption purpose).
+It returns only that kinds of keys that are supported by OP. However it's only an example and in production's application there is strictly required to store keys 
+in the persistence storage and make a key rotation. Please keep in mind that OP gets the first key that matched its criteria so returning obsolete key before 
+fresh one is a mistake. See [JSON Web Key (JWK) RFC-7517(https://tools.ietf.org/html/rfc7517)] for more information.
 
 ### JweKeyGenerator
 The [JweKeyGenerator.java](src/main/java/com/onegini/oidc/encryption/JweKeyGenerator.java) is responsible for key generation. It shows how to generate the RSA 
@@ -124,4 +125,4 @@ application. In production environment it should be replaced by service cooperat
 ### JweDecrypterService
 The [JweDecrypterService.java](src/main/java/com/onegini/oidc/encryption/JweDecrypterService.java) is main place where encryption stuff goes. The `decrypt` 
 method consumes the encrypted JWT and tries to decrypt it by finding relevant key in Cache which is pass with encrypted JWT to external `nimbusds-jose-jwt` 
-library. The returned string is a Signed JWT which should be verified.
+library. The returned string is a Signed JWT which should be verified. 
