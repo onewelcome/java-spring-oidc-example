@@ -22,8 +22,14 @@ The Web client must support the following scopes:
   * profile
   
 The Onegini Token Server only redirects to preconfigured endpoints after login or logout. You must configure the following endpoints in the Onegini Token Server:
-  * Redirect URL: `http://localhost:8080/`
+  * Redirect URL: `http://localhost:8080/login`
   * Post Logout Redirect URL: `http://localhost:8080/signout-callback-oidc`
+  
+### Configuring id token encryption
+Onegini Token Server support encryption to provide confidentiality of the claims. It can be configured by providing JWKS endpoint and choosing an encryption method
+in OpenID Connect configuration:
+  * Encryption method: select one of encryption method that will be used to encrypt the Id Token.
+  * JWKS URI: endpoint that's return list of keys for encrypting purpose. 
 
 ## Set up the application configuration
 
@@ -70,6 +76,16 @@ In this example we use the `sub` and the `name` value, but you can use any value
 its signature against the keys that are returned by the JWKS endpoint of the OP. It verifies that the claims are from the issuer, intended for the correct 
 audience and that they have not expired.
 
+### OpenIdTokenDecrypterWrapper
+[OpenIdTokenDecrypterWrapper.java](src/main/java/com/onegini/oidc/security/OpenIdTokenDecrypterWrapper.java) decrypts the ID token. The ID token has been 
+encrypted by freshly generated CEK (Content Encryption Key) that is encrypted by one of asymetric key. Public parts of those keys are share by JWKS endpoint 
+available on this example application.
+See [WellKnownJwksController.java](src/main/java/com/onegini/oidc/WellKnownJwksController.java) for more information.
+
+### EncryptionAlgorithms
+The [EncryptionAlgorithms.java](src/main/java/com/onegini/oidc/model/EncryptionAlgorithms.java) contains all algorithms that could be used by OP to encrypt the 
+CEK (Content Encryption Key).
+
 ### UserInfo
 The [UserInfo.java](src/main/java/com/onegini/oidc/model/UserInfo.java) is a POJO for user information. It is used as user principal in Spring 
 Security.
@@ -90,3 +106,22 @@ the modelMap for the template that shows the user information, ID token and the 
 Thie [LogoutController.java](src/main/java/com/onegini/oidc/LogoutController.java) contains the logic to end the session. The user first comes to
 the `/logout` endpoint. If the user was logged in via an ID token, they are redirected to the end session endpoint of the OP. The OP ends the session of the 
 user and redirects it back to `http://localhost:8080/signout-callback-oidc`. Then the user is logged out in Spring Security and redirected to the home page.
+
+### WellKnownJwksController
+The [WellKnownJwksController.java](src/main/java/com/onegini/oidc/WellKnownJwksController.java) is responsible to return a JWKS list (for encryption purpose).
+It returns only that kind of keys that are supported on OP. However it's only an example and in production application there is strictly required to store keys 
+in persistence storage and make a key rotation. Please keep in mind that OP gets the first key that matched its criteria so returning obsolete key on before 
+fresh one is a mistake.
+
+### JweKeyGenerator
+The [JweKeyGenerator.java](src/main/java/com/onegini/oidc/encryption/JweKeyGenerator.java) is responsible for key generation. It shows how to generate the RSA 
+and EC keys.
+
+### JwkSetProvider
+The [JwkSetProvider.java](src/main/java/com/onegini/oidc/encryption/JwkSetProvider.java) has a storage role for caching a encryption keys for this example 
+application. In production environment it should be replaced by service cooperating with database.
+
+### JweDecrypterService
+The [JweDecrypterService.java](src/main/java/com/onegini/oidc/encryption/JweDecrypterService.java) is main place where encryption stuff goes. The `decrypt` 
+method consumes the encrypted JWT and tries to decrypt it by finding relevant key in Cache which is pass with encrypted JWT to external `nimbusds-jose-jwt` 
+library. The returned string is a Signed JWT which should be verified.

@@ -47,18 +47,18 @@ public class LogoutController {
   @GetMapping(PAGE_LOGOUT)
   private String logout(final HttpServletRequest request, final HttpServletResponse response, final Principal principal) {
     // Save idToken before authentication is cleared
-    final String idToken = getIdToken(principal);
+    final UserInfo userInfo = getUserInfo(principal);
 
     endSessionInSpringSecurity(request, response);
 
-    if (StringUtils.hasLength(idToken)) {
-      LOG.info("Has idToken {}", idToken);
+    if (userInfo != null && StringUtils.hasLength(userInfo.getIdToken())) {
+      LOG.info("Has idToken {}", userInfo.getIdToken());
       final Map configuration = restTemplate.getForObject(applicationProperties.getIssuer() + WELL_KNOWN_CONFIG_PATH, Map.class);
 
       @SuppressWarnings("squid:S2583") final String endSessionEndpoint = configuration == null ? null : (String) configuration.get(KEY_END_SESSION_ENDPOINT);
 
       if (StringUtils.hasLength(endSessionEndpoint)) {
-        return endOpenIdSession(idToken, endSessionEndpoint);
+        return endOpenIdSession(userInfo, endSessionEndpoint);
       }
     }
 
@@ -71,13 +71,11 @@ public class LogoutController {
     return REDIRECT_TO_INDEX;
   }
 
-  private String getIdToken(final Principal principal) {
+  private UserInfo getUserInfo(final Principal principal) {
     if (principal instanceof PreAuthenticatedAuthenticationToken) {
       final PreAuthenticatedAuthenticationToken authenticationToken = (PreAuthenticatedAuthenticationToken) principal;
-      final UserInfo userInfo = (UserInfo) authenticationToken.getPrincipal();
-      return userInfo.getIdToken();
+      return (UserInfo) authenticationToken.getPrincipal();
     }
-
     return null;
   }
 
@@ -89,12 +87,15 @@ public class LogoutController {
     }
   }
 
-  private String endOpenIdSession(final String idToken, final String endSessionEndpoint) {
+  private String endOpenIdSession(final UserInfo userInfo, final String endSessionEndpoint) {
     final MultiValueMap<String, String> requestParameters = new LinkedMultiValueMap<>();
 
     final String postLogoutRedirectUri = ServletUriComponentsBuilder.fromCurrentContextPath().path(PAGE_SIGNOUT_CALLBACK_OIDC).build().toUriString();
     requestParameters.add(PARAM_POST_LOGOUT_REDIRECT_URI, postLogoutRedirectUri);
-    requestParameters.add(PARAM_ID_TOKEN_HINT, idToken);
+    // Token Server doesn't know how to decode the token id and it doesn't store encoded token id so passing that won't help to detect which session should be logged out.
+    if (!userInfo.isEncryptionEnabled()) {
+      requestParameters.add(PARAM_ID_TOKEN_HINT, userInfo.getIdToken());
+    }
 
     final String redirectUri = UriComponentsBuilder.fromUriString(endSessionEndpoint)
         .queryParams(requestParameters)
