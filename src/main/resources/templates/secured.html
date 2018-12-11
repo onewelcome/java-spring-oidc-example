@@ -19,9 +19,13 @@
         <dd th:text="${userInfo.id}"></dd>
         <dt>Name</dt>
         <dd th:text="${userInfo.name}"></dd>
-        <dt>Encryption enabled</dt>
-        <dd th:text="${userInfo.encryptionEnabled}"></dd>
-        <dt>Your id token</dt>
+        <th:block th:unless="${#strings.isEmpty(userInfo.encryptedIdToken)}">
+          <dt>Your encrypted id token</span></dt>
+          <dd>
+            <pre th:text="${userInfo.encryptedIdToken}"></pre>
+          </dd>
+        </th:block>
+        <dt>Your id token</span></dt>
         <dd>
           <pre th:text="${userInfo.idToken}"></pre>
         </dd>

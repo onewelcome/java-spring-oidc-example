@@ -1,9 +1,11 @@
 package com.onegini.oidc.encryption;
 
-import static com.nimbusds.oauth2.sdk.util.StringUtils.isBlank;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import javax.annotation.Resource;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import com.nimbusds.jose.JOSEException;
@@ -16,36 +18,45 @@ import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.KeyType;
 import com.nimbusds.jose.jwk.RSAKey;
+import com.nimbusds.jwt.JWT;
 
 @Service
 public class JweDecrypterService {
+  private static final Logger LOG = LoggerFactory.getLogger(JweDecrypterService.class);
 
   @Resource
   private JwkSetProvider jwkSetProvider;
 
-  public String decrypt(final JWEObject jweObject) throws JOSEException {
+  public JWT decrypt(final JWEObject jweObject) {
     validateKeyIdExists(jweObject);
 
     final JWK relevantKey = getRelevantKey(jweObject);
     final JWEDecrypter decrypter = getDecrypter(relevantKey);
 
-    jweObject.decrypt(decrypter);
-    return jweObject.getPayload().toString();
+    try {
+      jweObject.decrypt(decrypter);
+      return jweObject.getPayload().toSignedJWT();
+    } catch (JOSEException e) {
+      LOG.error("Could not decrypt the JWT");
+      throw new IllegalStateException("Could not decrypt the JWT");
+    }
   }
 
   private void validateKeyIdExists(final JWEObject jweObject) {
     if (isBlank(jweObject.getHeader().getKeyID())) {
-      throw new IllegalArgumentException("JWE doesn't contains a key id");
+      throw new IllegalArgumentException("JWE does not contain a key id");
     }
   }
 
   private JWK getRelevantKey(final JWEObject jweObject) {
-    final JWKSet privateJWKS = jwkSetProvider.getPrivateJWKS();
+    final JWKSet privateJWKS = jwkSetProvider.getPrivateJWKS(jweObject.getHeader().getAlgorithm());
     final JWK relevantKey = privateJWKS.getKeyByKeyId(jweObject.getHeader().getKeyID());
     if (relevantKey != null) {
       return relevantKey;
     } else {
-      throw new IllegalArgumentException("JWK set isn't contains a relevant JWK.");
+      //The Server may have cached the JWKSet response and when this app was restarted, it generated new keys which would not match
+      LOG.error("Could not match the keyId with any of the private keys provided.");
+      throw new IllegalArgumentException("JWK set does not contain a relevant JWK.");
     }
   }
 
@@ -57,12 +68,11 @@ public class JweDecrypterService {
       } else if (KeyType.EC.equals(keyType)) {
         return new ECDHDecrypter((ECKey) jwk);
       } else {
-        throw new IllegalStateException(String.format("Unsupported type of key (%s)", jwk.getKeyType()));
+        throw new IllegalStateException(String.format("Unsupported KeyType (%s)", jwk.getKeyType()));
       }
     } catch (final JOSEException e) {
       final String msg = String.format("Could not create the JWE decrypter for type (%s).", keyType);
-      throw new RuntimeException(msg, e);
+      throw new IllegalStateException(msg, e);
     }
   }
-
 }

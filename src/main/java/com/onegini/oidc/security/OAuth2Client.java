@@ -14,15 +14,19 @@ import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.security.oauth2.client.OAuth2ClientContext;
 import org.springframework.security.oauth2.client.OAuth2RestOperations;
 import org.springframework.security.oauth2.client.OAuth2RestTemplate;
-import org.springframework.security.oauth2.client.discovery.ProviderConfiguration;
-import org.springframework.security.oauth2.client.discovery.ProviderDiscoveryClient;
 import org.springframework.security.oauth2.client.resource.OAuth2ProtectedResourceDetails;
 import org.springframework.security.oauth2.client.token.grant.code.AuthorizationCodeResourceDetails;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableOAuth2Client;
+import org.springframework.web.client.RestTemplate;
+
+import com.onegini.oidc.model.OpenIdWellKnownConfiguration;
 
 @Configuration
 @EnableOAuth2Client
 public class OAuth2Client {
+
+  private static final String WELL_KNOWN_CONFIG_PATH = "/.well-known/openid-configuration";
+
   @Value("${onegini.oauth2.clientId}")
   private String clientId;
 
@@ -35,14 +39,16 @@ public class OAuth2Client {
   @SuppressWarnings("SpringJavaAutowiringInspection") // Provided by Spring Boot
   @Resource
   private OAuth2ClientContext oAuth2ClientContext;
+  @Resource
+  private RestTemplate restTemplate;
 
   @Bean
-  public ProviderConfiguration getProviderConfiguration() {
-    return new ProviderDiscoveryClient(issuer).discover();
+  public OpenIdWellKnownConfiguration getOpenIdWellKnownConfiguration() {
+    return restTemplate.getForObject(issuer + WELL_KNOWN_CONFIG_PATH, OpenIdWellKnownConfiguration.class);
   }
 
   @Bean
-  public OAuth2ProtectedResourceDetails protectedResourceDetails(final ProviderConfiguration providerConfiguration) {
+  public OAuth2ProtectedResourceDetails protectedResourceDetails(final OpenIdWellKnownConfiguration configuration) {
 
     //setup OAuth
     final AuthorizationCodeResourceDetails conf = new AuthorizationCodeResourceDetails();
@@ -50,8 +56,8 @@ public class OAuth2Client {
     conf.setClientAuthenticationScheme(header);
     conf.setClientId(clientId);
     conf.setClientSecret(clientSecret);
-    conf.setUserAuthorizationUri(providerConfiguration.getAuthorizationEndpoint().toString());
-    conf.setAccessTokenUri(providerConfiguration.getTokenEndpoint().toString());
+    conf.setUserAuthorizationUri(configuration.getAuthorizationEndpoint());
+    conf.setAccessTokenUri(configuration.getTokenEndpoint());
     conf.setScope(Arrays.asList("openid", "profile"));
 
     return conf;
@@ -59,7 +65,7 @@ public class OAuth2Client {
 
   @Bean
   @Scope(value = "session", proxyMode = ScopedProxyMode.INTERFACES)
-  public OAuth2RestOperations oAuth2RestOperations(final ProviderConfiguration providerConfiguration) {
-    return new OAuth2RestTemplate(protectedResourceDetails(providerConfiguration), oAuth2ClientContext);
+  public OAuth2RestOperations oAuth2RestOperations(final OpenIdWellKnownConfiguration configuration) {
+    return new OAuth2RestTemplate(protectedResourceDetails(configuration), oAuth2ClientContext);
   }
 }
