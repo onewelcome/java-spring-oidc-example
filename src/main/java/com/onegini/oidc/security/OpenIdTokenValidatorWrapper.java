@@ -5,7 +5,6 @@ import java.net.URL;
 
 import javax.annotation.Resource;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.stereotype.Component;
 
@@ -19,6 +18,7 @@ import com.nimbusds.jwt.JWT;
 import com.nimbusds.oauth2.sdk.id.ClientID;
 import com.nimbusds.oauth2.sdk.id.Issuer;
 import com.nimbusds.openid.connect.sdk.validators.IDTokenValidator;
+import com.onegini.oidc.config.ApplicationProperties;
 import com.onegini.oidc.model.OpenIdWellKnownConfiguration;
 
 /**
@@ -27,10 +27,8 @@ import com.onegini.oidc.model.OpenIdWellKnownConfiguration;
 @Component
 public class OpenIdTokenValidatorWrapper {
 
-  @Value("${onegini.oauth2.clientId}")
-  private String clientId;
-  @Value("${onegini.oauth2.issuer}")
-  private String issuer;
+  @Resource
+  private ApplicationProperties applicationProperties;
   @Resource
   private OpenIdWellKnownConfiguration openIdWellKnownConfiguration;
 
@@ -42,7 +40,8 @@ public class OpenIdTokenValidatorWrapper {
     try {
       final JWKSource<SecurityContext> jwkSource = new RemoteJWKSet<>(new URL(jwksUri));
       final JWSKeySelector jwsKeySelector = new JWSVerificationKeySelector<>(algorithm, jwkSource);
-      final IDTokenValidator idTokenValidator = new IDTokenValidator(new Issuer(issuer), new ClientID(clientId), jwsKeySelector, null);
+      final IDTokenValidator idTokenValidator = new IDTokenValidator(new Issuer(applicationProperties.getIssuer()),
+          new ClientID(applicationProperties.getClientId()), jwsKeySelector, null);
       idTokenValidator.validate(idToken, null);
     } catch (MalformedURLException e) {
       throw new IllegalArgumentException("Unable to convert '" + jwksUri + "' to URL.", e);

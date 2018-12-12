@@ -4,8 +4,6 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import javax.annotation.Resource;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import com.nimbusds.jose.JOSEException;
@@ -19,10 +17,11 @@ import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.KeyType;
 import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jwt.JWT;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
+@Slf4j
 public class JweDecrypterService {
-  private static final Logger LOG = LoggerFactory.getLogger(JweDecrypterService.class);
 
   @Resource
   private JwkSetProvider jwkSetProvider;
@@ -37,8 +36,8 @@ public class JweDecrypterService {
       jweObject.decrypt(decrypter);
       return jweObject.getPayload().toSignedJWT();
     } catch (JOSEException e) {
-      LOG.error("Could not decrypt the JWT");
-      throw new IllegalStateException("Could not decrypt the JWT");
+      log.error("Could not decrypt the JWT");
+      throw new IllegalStateException("Could not decrypt the JWT", e);
     }
   }
 
@@ -53,11 +52,10 @@ public class JweDecrypterService {
     final JWK relevantKey = privateJWKS.getKeyByKeyId(jweObject.getHeader().getKeyID());
     if (relevantKey != null) {
       return relevantKey;
-    } else {
-      //The Server may have cached the JWKSet response and when this app was restarted, it generated new keys which would not match
-      LOG.error("Could not match the keyId with any of the private keys provided.");
-      throw new IllegalArgumentException("JWK set does not contain a relevant JWK.");
     }
+    //The Server may have cached the JWKSet response and when this app was restarted, it generated new keys which would not match
+    log.error("Could not match the keyId with any of the private keys provided.");
+    throw new IllegalArgumentException("JWK set does not contain a relevant JWK.");
   }
 
   private JWEDecrypter getDecrypter(final JWK jwk) {
@@ -67,9 +65,8 @@ public class JweDecrypterService {
         return new RSADecrypter((RSAKey) jwk);
       } else if (KeyType.EC.equals(keyType)) {
         return new ECDHDecrypter((ECKey) jwk);
-      } else {
-        throw new IllegalStateException(String.format("Unsupported KeyType (%s)", jwk.getKeyType()));
       }
+      throw new IllegalStateException(String.format("Unsupported KeyType (%s)", jwk.getKeyType()));
     } catch (final JOSEException e) {
       final String msg = String.format("Could not create the JWE decrypter for type (%s).", keyType);
       throw new IllegalStateException(msg, e);

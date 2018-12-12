@@ -6,7 +6,6 @@ import java.util.Arrays;
 
 import javax.annotation.Resource;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
@@ -19,6 +18,7 @@ import org.springframework.security.oauth2.client.token.grant.code.Authorization
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableOAuth2Client;
 import org.springframework.web.client.RestTemplate;
 
+import com.onegini.oidc.config.ApplicationProperties;
 import com.onegini.oidc.model.OpenIdWellKnownConfiguration;
 
 @Configuration
@@ -27,15 +27,8 @@ public class OAuth2Client {
 
   private static final String WELL_KNOWN_CONFIG_PATH = "/.well-known/openid-configuration";
 
-  @Value("${onegini.oauth2.clientId}")
-  private String clientId;
-
-  @Value("${onegini.oauth2.clientSecret}")
-  private String clientSecret;
-
-  @Value("${onegini.oauth2.issuer}")
-  private String issuer;
-
+  @Resource
+  private ApplicationProperties applicationProperties;
   @SuppressWarnings("SpringJavaAutowiringInspection") // Provided by Spring Boot
   @Resource
   private OAuth2ClientContext oAuth2ClientContext;
@@ -44,7 +37,7 @@ public class OAuth2Client {
 
   @Bean
   public OpenIdWellKnownConfiguration getOpenIdWellKnownConfiguration() {
-    return restTemplate.getForObject(issuer + WELL_KNOWN_CONFIG_PATH, OpenIdWellKnownConfiguration.class);
+    return restTemplate.getForObject(applicationProperties.getIssuer() + WELL_KNOWN_CONFIG_PATH, OpenIdWellKnownConfiguration.class);
   }
 
   @Bean
@@ -54,8 +47,8 @@ public class OAuth2Client {
     final AuthorizationCodeResourceDetails conf = new AuthorizationCodeResourceDetails();
     conf.setAuthenticationScheme(header);
     conf.setClientAuthenticationScheme(header);
-    conf.setClientId(clientId);
-    conf.setClientSecret(clientSecret);
+    conf.setClientId(applicationProperties.getClientId());
+    conf.setClientSecret(applicationProperties.getClientSecret());
     conf.setUserAuthorizationUri(configuration.getAuthorizationEndpoint());
     conf.setAccessTokenUri(configuration.getTokenEndpoint());
     conf.setScope(Arrays.asList("openid", "profile"));

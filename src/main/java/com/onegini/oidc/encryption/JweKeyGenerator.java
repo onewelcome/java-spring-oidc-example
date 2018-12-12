@@ -15,20 +15,18 @@ import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 import java.util.UUID;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import com.nimbusds.jose.JWEAlgorithm;
 import com.nimbusds.jose.jwk.ECKey;
 import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.RSAKey;
-import com.onegini.oidc.JweWellKnownJwksController;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
+@Slf4j
 class JweKeyGenerator {
 
-  private static final Logger LOG = LoggerFactory.getLogger(JweWellKnownJwksController.class);
   private static final int RSA_KEYSIZE = 2048;
 
   JWK generateKey(final JWEAlgorithm jweAlgorithm) {
@@ -37,7 +35,7 @@ class JweKeyGenerator {
     } else if (JWEAlgorithm.Family.ECDH_ES.contains(jweAlgorithm)) {
       return generateECKey(jweAlgorithm);
     } else {
-      LOG.error("Unsupported Algorithm ({})", jweAlgorithm);
+      log.error("Unsupported Algorithm ({})", jweAlgorithm);
       return null;
     }
   }
@@ -55,7 +53,7 @@ class JweKeyGenerator {
           .algorithm(jweAlgorithm)
           .build();
     } catch (final NoSuchAlgorithmException e) {
-      LOG.error("Generating a RSA key failed.", e);
+      log.error("Generating a RSA key failed.", e);
     }
     return null;
   }
@@ -73,7 +71,7 @@ class JweKeyGenerator {
           .algorithm(jweAlgorithm)
           .build();
     } catch (final NoSuchAlgorithmException | InvalidAlgorithmParameterException e) {
-      LOG.error("Generating a EC key failed.", e);
+      log.error("Generating a EC key failed.", e);
     }
     return null;
   }

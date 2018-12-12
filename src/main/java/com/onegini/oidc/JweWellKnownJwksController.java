@@ -19,7 +19,7 @@ import com.onegini.oidc.model.OpenIdWellKnownConfiguration;
 import net.minidev.json.JSONObject;
 
 @RestController
-@ConditionalOnProperty(value = "id-token-encryption.enabled", havingValue = "true")
+@ConditionalOnProperty(value = "onegini.oidc.idTokenEncryptionEnabled", havingValue = "true")
 public class JweWellKnownJwksController {
   private static final String JWKS_KEYS_PATH = "/.well-known/jwks.json";
   private static final JWEAlgorithm ASYMMETRIC_ENCRYPTION_ALGORITHM = ECDH_ES;

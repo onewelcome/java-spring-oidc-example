@@ -38,20 +38,20 @@ choosing an encryption method in [OpenID Connect configuration](https://docs.one
 Modify `application.properties` in _/src/main/resources_ or use one of the mechanisms Spring Boot supports to [override property values](https://docs.spring.io/spring-boot/docs/current/reference/html/howto-properties-and-configuration.html).
 The following properties must be set:
 
-  * onegini.oauth2.clientId: the client identifier of the Web client that supports OpenID Connect
-  * onegini.oauth2.clientSecret: the client secret of the Web client that supports OpenID Connect
-  * onegini.oauth2.issuer: the base URL of the Token Server instance
+  * onegini.oidc.clientId: the client identifier of the Web client that supports OpenID Connect
+  * onegini.oidc.clientSecret: the client secret of the Web client that supports OpenID Connect
+  * onegini.oidc.issuer: the base URL of the Token Server instance
   
 Optional properties:  
-  * id-token-encryption.enabled: boolean for enabling ID token encryption. This should match the server side configuration
+  * onegini.oidc.idTokenEncryptionEnabled: boolean for enabling ID token encryption. This should match the server side configuration
 
 ___Example configuration___
 
 ```
-onegini.oauth2.clientId=openid-client
-onegini.oauth2.clientSecret=secret
-onegini.oauth2.issuer=http://localhost:7878/oauth
-id-token-encryption.enabled=true
+onegini.oidc.clientId=openid-client
+onegini.oidc.clientSecret=secret
+onegini.oidc.issuer=http://localhost:7878/oauth
+onegini.oidc.idTokenEncryptionEnabled=true
 ```
 
 ## Run and test
@@ -114,7 +114,7 @@ This should align with your key rotation strategy. It also validates that the ke
 exposed by the [OpenID Provider Metadata](https://openid.net/specs/openid-connect-discovery-1_0.html#ProviderMetadata) This example generates keys every time 
 the application is started and stores them in memory. In a production situation, keys should be persisted in some way and proper key rotation followed. See 
 [JSON Web Key (JWK) RFC-7517](https://tools.ietf.org/html/rfc7517) for more information. This controller is only exposed when the property
-`id-token-encryption.enabled` is set to `true`. If your client is not configured for encryption, there is no need for this controller.
+`onegini.oidc.idTokenEncryptionEnabled` is set to `true`. If your client is not configured for encryption, there is no need for this controller.
 
 ### JweKeyGenerator
 The [JweKeyGenerator.java](src/main/java/com/onegini/oidc/encryption/JweKeyGenerator.java) is responsible for key generation. It shows how to generate the RSA 
@@ -128,3 +128,5 @@ environment it should be modified to grab the keys from where they have been sto
 The [JweDecrypterService.java](src/main/java/com/onegini/oidc/encryption/JweDecrypterService.java) does the decryption of the ID token. The `decrypt` 
 method consumes the encrypted JWT and tries to decrypt it by finding the relevant key. It then passes that key with the encrypted JWT to `nimbusds-jose-jwt` 
 library which decrypts it and returns the Signed JWT.
+
+## Troubleshooting
