@@ -3,12 +3,9 @@ package com.onegini.oidc.model;
 import java.util.Collection;
 
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
-
 @Data
-@EqualsAndHashCode
 @NoArgsConstructor
 public class OpenIdWellKnownConfiguration {
 

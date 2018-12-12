@@ -8,6 +8,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
@@ -15,7 +16,6 @@ import org.springframework.security.web.authentication.preauth.PreAuthenticatedA
 import org.springframework.stereotype.Controller;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
-import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -28,25 +28,25 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class LogoutController {
   public static final String PAGE_LOGOUT = "/logout";
-  @SuppressWarnings("squid:S1075")
   private static final String PARAM_POST_LOGOUT_REDIRECT_URI = "post_logout_redirect_uri";
   private static final String PARAM_ID_TOKEN_HINT = "id_token_hint";
   private static final String PAGE_SIGNOUT_CALLBACK_OIDC = "/signout-callback-oidc";
   private static final String REDIRECT_TO_INDEX = "redirect:/";
+
   @Resource
   private OpenIdWellKnownConfiguration openIdWellKnownConfiguration;
 
   @GetMapping(PAGE_LOGOUT)
   private String logout(final HttpServletRequest request, final HttpServletResponse response, final Principal principal) {
-    // Save idToken before authentication is cleared
+    // Fetch UserInfo before authentication is cleared
     final UserInfo userInfo = getUserInfo(principal);
 
     endSessionInSpringSecurity(request, response);
 
-    if (userInfo != null && StringUtils.hasLength(userInfo.getIdToken())) {
+    if (userInfo != null && StringUtils.isNotBlank(userInfo.getIdToken())) {
       log.info("Has idToken {}", userInfo.getIdToken());
       final String endSessionEndpoint = openIdWellKnownConfiguration.getEndSessionEndpoint();
-      if (StringUtils.hasLength(endSessionEndpoint)) {
+      if (StringUtils.isNotBlank(endSessionEndpoint)) {
         return endOpenIdSession(userInfo, endSessionEndpoint);
       }
     }
@@ -70,10 +70,11 @@ public class LogoutController {
 
   private void endSessionInSpringSecurity(final HttpServletRequest request, final HttpServletResponse response) {
     final Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-    if (auth != null) {
-      log.info("End user session in Spring Security");
-      new SecurityContextLogoutHandler().logout(request, response, auth);
+    if (auth == null) {
+      return;
     }
+    log.info("End user session in Spring Security");
+    new SecurityContextLogoutHandler().logout(request, response, auth);
   }
 
   private String endOpenIdSession(final UserInfo userInfo, final String endSessionEndpoint) {
@@ -81,6 +82,7 @@ public class LogoutController {
 
     final String postLogoutRedirectUri = ServletUriComponentsBuilder.fromCurrentContextPath().path(PAGE_SIGNOUT_CALLBACK_OIDC).build().toUriString();
     requestParameters.add(PARAM_POST_LOGOUT_REDIRECT_URI, postLogoutRedirectUri);
+
     // Token Server doesn't know how to decode the token id and it doesn't store encoded token id so passing that won't help to detect which session should be logged out.
     if (!userInfo.isEncryptionEnabled()) {
       requestParameters.add(PARAM_ID_TOKEN_HINT, userInfo.getIdToken());

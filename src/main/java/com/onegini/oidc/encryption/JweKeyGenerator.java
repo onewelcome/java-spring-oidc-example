@@ -27,23 +27,23 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 class JweKeyGenerator {
 
-  private static final int RSA_KEYSIZE = 2048;
+  private static final int RSA_KEY_SIZE = 2048;
 
   JWK generateKey(final JWEAlgorithm jweAlgorithm) {
     if (JWEAlgorithm.Family.RSA.contains(jweAlgorithm)) {
       return generateRSAKey(jweAlgorithm);
-    } else if (JWEAlgorithm.Family.ECDH_ES.contains(jweAlgorithm)) {
-      return generateECKey(jweAlgorithm);
-    } else {
-      log.error("Unsupported Algorithm ({})", jweAlgorithm);
-      return null;
     }
+    if (JWEAlgorithm.Family.ECDH_ES.contains(jweAlgorithm)) {
+      return generateECKey(jweAlgorithm);
+    }
+    log.error("Unsupported Algorithm ({})", jweAlgorithm);
+    return null;
   }
 
   private JWK generateRSAKey(final JWEAlgorithm jweAlgorithm) {
     try {
       final KeyPairGenerator gen = KeyPairGenerator.getInstance(RSA.getValue());
-      gen.initialize(RSA_KEYSIZE);
+      gen.initialize(RSA_KEY_SIZE);
       final KeyPair keyPair = gen.generateKeyPair();
 
       return new RSAKey.Builder((RSAPublicKey) keyPair.getPublic())

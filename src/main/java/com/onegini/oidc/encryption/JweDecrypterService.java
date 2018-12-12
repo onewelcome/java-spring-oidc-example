@@ -35,8 +35,7 @@ public class JweDecrypterService {
     try {
       jweObject.decrypt(decrypter);
       return jweObject.getPayload().toSignedJWT();
-    } catch (JOSEException e) {
-      log.error("Could not decrypt the JWT");
+    } catch (final JOSEException e) {
       throw new IllegalStateException("Could not decrypt the JWT", e);
     }
   }
@@ -50,12 +49,14 @@ public class JweDecrypterService {
   private JWK getRelevantKey(final JWEObject jweObject) {
     final JWKSet privateJWKS = jwkSetProvider.getPrivateJWKS(jweObject.getHeader().getAlgorithm());
     final JWK relevantKey = privateJWKS.getKeyByKeyId(jweObject.getHeader().getKeyID());
-    if (relevantKey != null) {
-      return relevantKey;
+
+    if (relevantKey == null) {
+      //The Server may have cached the JWKSet response and when this app was restarted, it generated new keys which would not match
+      log.debug("Could not match the keyId with any of the private keys provided.");
+      throw new IllegalArgumentException("JWK set does not contain a relevant JWK.");
     }
-    //The Server may have cached the JWKSet response and when this app was restarted, it generated new keys which would not match
-    log.error("Could not match the keyId with any of the private keys provided.");
-    throw new IllegalArgumentException("JWK set does not contain a relevant JWK.");
+
+    return relevantKey;
   }
 
   private JWEDecrypter getDecrypter(final JWK jwk) {
@@ -63,7 +64,8 @@ public class JweDecrypterService {
     try {
       if (KeyType.RSA.equals(keyType)) {
         return new RSADecrypter((RSAKey) jwk);
-      } else if (KeyType.EC.equals(keyType)) {
+      }
+      if (KeyType.EC.equals(keyType)) {
         return new ECDHDecrypter((ECKey) jwk);
       }
       throw new IllegalStateException(String.format("Unsupported KeyType (%s)", jwk.getKeyType()));

@@ -90,7 +90,7 @@ public class OpenIdConnectAuthenticationFilter extends AbstractAuthenticationPro
   }
 
   private TokenDetails getTokenDetails(final JWT jwt) {
-    JWTClaimsSet claimsSet;
+    final JWTClaimsSet claimsSet;
     try {
       //If we support only signed JWT or encrypted JWT we can include only adequate part of code
       if (jwt instanceof SignedJWT) {
@@ -112,7 +112,7 @@ public class OpenIdConnectAuthenticationFilter extends AbstractAuthenticationPro
 
   private UserInfo createUserInfo(final JWTClaimsSet jwtClaimsSet, final JWT jwt) {
     Object name = jwtClaimsSet.getClaim("name");
-    String idToken;
+    final String idToken;
     String encryptedIdToken = null;
     if (jwt instanceof EncryptedJWT) {
       final EncryptedJWT encryptedJWT = (EncryptedJWT) jwt;
@@ -130,9 +130,10 @@ public class OpenIdConnectAuthenticationFilter extends AbstractAuthenticationPro
 
   private void validateEncryptionConfigurationMatchesServer(final JWT jwt) {
     if (applicationProperties.isIdTokenEncryptionEnabled() && !(jwt instanceof EncryptedJWT)) {
-      throw new IllegalStateException("Server did not return an EncryptedJWT but encryption was enabled. Check your server side configuration");
-    } else if (!applicationProperties.isIdTokenEncryptionEnabled() && jwt instanceof EncryptedJWT) {
-      throw new IllegalStateException("Server returned an EncryptedJWT but encryption was not enabled. Check your server side configuration.");
+      throw new IllegalStateException("Server did not return an Encrypted JWT but encryption was enabled. Check your server side configuration");
+    }
+    if (!applicationProperties.isIdTokenEncryptionEnabled() && jwt instanceof EncryptedJWT) {
+      throw new IllegalStateException("Server returned an Encrypted JWT but encryption was not enabled. Check your server side configuration.");
     }
   }
 
