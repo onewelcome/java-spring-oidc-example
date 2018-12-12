@@ -18,14 +18,23 @@ import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.security.oauth2.common.exceptions.OAuth2Exception;
 import org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
+import org.springframework.stereotype.Component;
 
-import com.onegini.oidc.model.TokenDetails;
-import com.onegini.oidc.model.UserInfo;
+import com.nimbusds.jwt.EncryptedJWT;
 import com.nimbusds.jwt.JWT;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.JWTParser;
+import com.nimbusds.jwt.SignedJWT;
+import com.onegini.oidc.config.ApplicationProperties;
+import com.onegini.oidc.encryption.JweDecrypterService;
+import com.onegini.oidc.model.TokenDetails;
+import com.onegini.oidc.model.UserInfo;
+import lombok.extern.slf4j.Slf4j;
 
+@Component
+@Slf4j
 public class OpenIdConnectAuthenticationFilter extends AbstractAuthenticationProcessingFilter {
+
 
   @Resource
   private OAuth2RestOperations oAuth2RestOperations;
@@ -33,6 +42,10 @@ public class OpenIdConnectAuthenticationFilter extends AbstractAuthenticationPro
   private OAuth2ProtectedResourceDetails details;
   @Resource
   private OpenIdTokenValidatorWrapper openIdTokenValidatorWrapper;
+  @Resource
+  private JweDecrypterService jweDecrypterService;
+  @Resource
+  private ApplicationProperties applicationProperties;
 
   protected OpenIdConnectAuthenticationFilter(final String defaultFilterProcessesUrl) {
     super(defaultFilterProcessesUrl);
@@ -41,19 +54,27 @@ public class OpenIdConnectAuthenticationFilter extends AbstractAuthenticationPro
 
   @Override
   public Authentication attemptAuthentication(final HttpServletRequest request, final HttpServletResponse response) {
-    // Use ID token inside the Access Token to retrieve user info
-    final OAuth2AccessToken accessToken = getAccessToken();
+    try {
+      // Use ID token inside the Access Token to retrieve user info
+      final OAuth2AccessToken accessToken = getAccessToken();
 
-    final String idToken = accessToken.getAdditionalInformation().get("id_token").toString();
+      final String idToken = accessToken.getAdditionalInformation().get("id_token").toString();
+      final JWT jwt = JWTParser.parse(idToken);
 
-    final TokenDetails tokenDetails = getTokenDetails(idToken);
-    final JWTClaimsSet jwtClaimsSet = tokenDetails.getJwtClaimsSet();
+      //make sure the returned JWT matches our expectations
+      validateEncryptionConfigurationMatchesServer(jwt);
 
-    final UserInfo principal = createUser(jwtClaimsSet, idToken);
-    // We do not assign authorities here, but they can be based on claims in the ID token.
-    final PreAuthenticatedAuthenticationToken token = new PreAuthenticatedAuthenticationToken(principal, empty(), NO_AUTHORITIES);
-    token.setDetails(tokenDetails);
-    return token;
+      final TokenDetails tokenDetails = getTokenDetails(jwt);
+      final JWTClaimsSet jwtClaimsSet = tokenDetails.getJwtClaimsSet();
+
+      final UserInfo principal = createUserInfo(jwtClaimsSet, jwt);
+      // We do not assign authorities here, but they can be based on claims in the ID token.
+      final PreAuthenticatedAuthenticationToken token = new PreAuthenticatedAuthenticationToken(principal, empty(), NO_AUTHORITIES);
+      token.setDetails(tokenDetails);
+      return token;
+    } catch (final ParseException e) {
+      throw new BadCredentialsException("Could not obtain user details from token", e);
+    }
   }
 
   private OAuth2AccessToken getAccessToken() {
@@ -62,30 +83,58 @@ public class OpenIdConnectAuthenticationFilter extends AbstractAuthenticationPro
     try {
       accessToken = oAuth2RestOperations.getAccessToken();
     } catch (final OAuth2Exception e) {
+      log.error("Could not get Access Token", e);
       throw new AccessTokenRequiredException("Could not obtain access token", details, e);
     }
     return accessToken;
   }
 
-  private TokenDetails getTokenDetails(final String idToken) {
+  private TokenDetails getTokenDetails(final JWT jwt) {
+    final JWTClaimsSet claimsSet;
     try {
-      final JWT jwt = JWTParser.parse(idToken);
-
-      openIdTokenValidatorWrapper.validateToken(jwt);
-
-      return new TokenDetails(jwt.getJWTClaimsSet());
+      //If we support only signed JWT or encrypted JWT we can include only adequate part of code
+      if (jwt instanceof SignedJWT) {
+        openIdTokenValidatorWrapper.validateToken(jwt);
+        claimsSet = jwt.getJWTClaimsSet();
+      } else if (jwt instanceof EncryptedJWT) {
+        final JWT encryptedJWT = jweDecrypterService.decrypt((EncryptedJWT) jwt);
+        openIdTokenValidatorWrapper.validateToken(encryptedJWT);
+        claimsSet = encryptedJWT.getJWTClaimsSet();
+      } else {
+        log.warn("Plain JWT detected. JWT should be signed.");
+        claimsSet = jwt.getJWTClaimsSet();
+      }
     } catch (final ParseException e) {
       throw new BadCredentialsException("Could not obtain user details from token", e);
     }
+    return new TokenDetails(claimsSet);
   }
 
-  private UserInfo createUser(final JWTClaimsSet jwtClaimsSet, final String idToken) {
+  private UserInfo createUserInfo(final JWTClaimsSet jwtClaimsSet, final JWT jwt) {
     Object name = jwtClaimsSet.getClaim("name");
+    final String idToken;
+    String encryptedIdToken = null;
+    if (jwt instanceof EncryptedJWT) {
+      final EncryptedJWT encryptedJWT = (EncryptedJWT) jwt;
+      encryptedIdToken = jwt.getParsedString();
+      idToken = encryptedJWT.getPayload().toString();
+    } else {
+      idToken = jwt.getParsedString();
+    }
     if (name == null) {
       name = jwtClaimsSet.getSubject();
     }
 
-    return new UserInfo(jwtClaimsSet.getSubject(), (String) name, idToken);
+    return new UserInfo(jwtClaimsSet.getSubject(), (String) name, idToken, encryptedIdToken);
+  }
+
+  private void validateEncryptionConfigurationMatchesServer(final JWT jwt) {
+    if (applicationProperties.isIdTokenEncryptionEnabled() && !(jwt instanceof EncryptedJWT)) {
+      throw new IllegalStateException("Server did not return an Encrypted JWT but encryption was enabled. Check your server side configuration");
+    }
+    if (!applicationProperties.isIdTokenEncryptionEnabled() && jwt instanceof EncryptedJWT) {
+      throw new IllegalStateException("Server returned an Encrypted JWT but encryption was not enabled. Check your server side configuration.");
+    }
   }
 
 }
