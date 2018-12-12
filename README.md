@@ -99,7 +99,7 @@ The [SampleSecuredController.java](src/main/java/com/onegini/oidc/SampleSecuredC
 the modelMap for the template that shows the user information, ID token and the claims.
 
 ### LogoutController
-Thie [LogoutController.java](src/main/java/com/onegini/oidc/LogoutController.java) contains the logic to end the session. The user first comes to
+The [LogoutController.java](src/main/java/com/onegini/oidc/LogoutController.java) contains the logic to end the session. The user first comes to
 the `/logout` endpoint. If the user was logged in via an ID token, they are redirected to the end session endpoint of the OP. The OP ends the session of the 
 user and redirects it back to `http://localhost:8080/signout-callback-oidc`. Then the user is logged out in Spring Security and redirected to the home page.
 
@@ -130,3 +130,39 @@ method consumes the encrypted JWT and tries to decrypt it by finding the relevan
 library which decrypts it and returns the Signed JWT.
 
 ## Troubleshooting
+
+Connecting this Relying Party example with the Onegini Token Server requires configuration of both applications. This section describes some situations that may 
+go wrong. 
+
+### Application fails to start
+
+The RP can only start up when the Onegini Token Server is running. During the start up the RP tries to connect to the well-known-configuration endpoint of the
+Onegini Token Server.
+
+* Check that the Onegini Token Server is running
+* Check that the property `onegini.oidc.issuer` points to the URL of that Onegini Token Server
+
+### 401 - Unauthorized during login
+
+This means that the authentication has failed. 
+
+You may see this when the Relying Party has disabled ID Token encryption but the configuration in the Onegini Token Server has enabled it. When this is the 
+case, there are two solutions:
+* Enable ID Token encryption in the RP via the property `onegini.oidc.idTokenEncryptionEnabled=true` and restart the application
+* Disable ID Token encryption in the Onegini Token Server. Call the logout endpoint http://localhost:8080/logout before logging in again.
+
+### 500 - Internal server error during login
+
+An error page is shown during login with a message "Server did not return an Encrypted JWT but encryption was enabled. Check your server side configuration".
+
+You see this when the Relying Party has enabled ID Token encryption but the configuration in the Onegini Token Server has disabled it.
+
+There are two solutions:
+* Disable ID Token encryption in the RP via the property `onegini.oidc.idTokenEncryptionEnabled=false` and restart the application
+* Enable ID Token encryption in the Onegini Token Server. Call the logout endpoint http://localhost:8080/logout before logging in again.
+
+### Confirmation page is shown after logout
+
+There can be several reasons why this page is shown by the Onegini Token Server after logging out with the RP:
+* The POST logout redirect URL is not properly configured. Refer to the [Onegini Configuration](#onegini-configuration)
+* ID Token encryption is enabled
