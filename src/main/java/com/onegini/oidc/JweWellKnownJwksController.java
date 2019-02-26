@@ -15,13 +15,13 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.nimbusds.jose.JWEAlgorithm;
 import com.onegini.oidc.encryption.JwkSetProvider;
-import com.onegini.oidc.model.OpenIdWellKnownConfiguration;
+import com.onegini.oidc.model.OpenIdDiscovery;
 import net.minidev.json.JSONObject;
 
 @RestController
 @ConditionalOnProperty(value = "onegini.oidc.idTokenEncryptionEnabled", havingValue = "true")
 public class JweWellKnownJwksController {
-  private static final String JWKS_KEYS_PATH = "/.well-known/jwks.json";
+  private static final String JWKS_KEYS_PATH = "/.well-known/jwks.json"; // NOSONAR
   private static final JWEAlgorithm ASYMMETRIC_ENCRYPTION_ALGORITHM = ECDH_ES;
   //Configure this value based on your key rotation plan. The server will cache this response based on this value. Keys should be persisted
   //they are not changing at startup.
@@ -30,7 +30,7 @@ public class JweWellKnownJwksController {
   @Resource
   private JwkSetProvider jwkSetProvider;
   @Resource
-  private OpenIdWellKnownConfiguration openIdWellKnownConfiguration;
+  private OpenIdDiscovery openIdDiscovery;
 
   @GetMapping(JWKS_KEYS_PATH)
   public ResponseEntity<JSONObject> getJwks() {
@@ -44,12 +44,12 @@ public class JweWellKnownJwksController {
   }
 
   private void validateAlgorithmSupport(final JWEAlgorithm jweAlgorithm) {
-    final boolean algorithmNotSupported = openIdWellKnownConfiguration.getIdTokenEncryptionAlgValuesSupported().stream()
+    final boolean algorithmNotSupported = openIdDiscovery.getIdTokenEncryptionAlgValuesSupported().stream()
         .map(JWEAlgorithm::parse).noneMatch(alg -> alg.equals(jweAlgorithm));
 
     if (algorithmNotSupported) {
       throw new IllegalStateException("Algorithm is not supported by OP. Supported algorithms: " +
-          StringUtils.collectionToCommaDelimitedString(openIdWellKnownConfiguration.getIdTokenEncryptionAlgValuesSupported()));
+          StringUtils.collectionToCommaDelimitedString(openIdDiscovery.getIdTokenEncryptionAlgValuesSupported()));
     }
   }
 

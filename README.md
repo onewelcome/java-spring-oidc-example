@@ -56,7 +56,7 @@ onegini.oidc.idTokenEncryptionEnabled=true
 
 ## Run and test
 Run the example via the Run configuration in IntelliJ or via the command line: `mvn spring-boot:run`. The Token Server needs to be accessible to start this 
-application since it connects to the well-known-configuration endpoint during start up.
+application since it connects to the discovery endpoint during start up.
 
 Go to [http://localhost:8080](http://localhost:8080) 
 
@@ -136,11 +136,11 @@ go wrong.
 
 ### Application fails to start
 
-The RP can only start up when the Onegini Token Server is running. During the start up the RP tries to connect to the well-known-configuration endpoint of the
+The RP can only start up when the Onegini Token Server is running. During the start up the RP tries to connect to the discovery endpoint of the
 Onegini Token Server.
 
 * Check that the Onegini Token Server is running
-* Check that the property `onegini.oidc.issuer` points to the URL of that Onegini Token Server
+* Check that the property `onegini.oidc.issuer` points to the base URL of that Onegini Token Server (e.g. http://localhost:7878/oauth)
 
 ### 401 - Unauthorized during login
 
