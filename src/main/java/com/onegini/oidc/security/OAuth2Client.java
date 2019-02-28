@@ -19,13 +19,13 @@ import org.springframework.security.oauth2.config.annotation.web.configuration.E
 import org.springframework.web.client.RestTemplate;
 
 import com.onegini.oidc.config.ApplicationProperties;
-import com.onegini.oidc.model.OpenIdWellKnownConfiguration;
+import com.onegini.oidc.model.OpenIdDiscovery;
 
 @Configuration
 @EnableOAuth2Client
 public class OAuth2Client {
 
-  private static final String WELL_KNOWN_CONFIG_PATH = "/.well-known/openid-configuration";
+  private static final String DISCOVERY_PATH = "/.well-known/openid-configuration"; //NOSONAR
 
   @Resource
   private ApplicationProperties applicationProperties;
@@ -36,12 +36,12 @@ public class OAuth2Client {
   private RestTemplate restTemplate;
 
   @Bean
-  public OpenIdWellKnownConfiguration getOpenIdWellKnownConfiguration() {
-    return restTemplate.getForObject(applicationProperties.getIssuer() + WELL_KNOWN_CONFIG_PATH, OpenIdWellKnownConfiguration.class);
+  public OpenIdDiscovery getOpenIdDiscovery() {
+    return restTemplate.getForObject(applicationProperties.getIssuer() + DISCOVERY_PATH, OpenIdDiscovery.class);
   }
 
   @Bean
-  public OAuth2ProtectedResourceDetails protectedResourceDetails(final OpenIdWellKnownConfiguration configuration) {
+  public OAuth2ProtectedResourceDetails protectedResourceDetails(final OpenIdDiscovery configuration) {
 
     //setup OAuth
     final AuthorizationCodeResourceDetails conf = new AuthorizationCodeResourceDetails();
@@ -58,7 +58,7 @@ public class OAuth2Client {
 
   @Bean
   @Scope(value = "session", proxyMode = ScopedProxyMode.INTERFACES)
-  public OAuth2RestOperations oAuth2RestOperations(final OpenIdWellKnownConfiguration configuration) {
+  public OAuth2RestOperations oAuth2RestOperations(final OpenIdDiscovery configuration) {
     return new OAuth2RestTemplate(protectedResourceDetails(configuration), oAuth2ClientContext);
   }
 }

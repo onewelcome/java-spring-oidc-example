@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
-public class OpenIdWellKnownConfiguration {
+public class OpenIdDiscovery {
 
   private String issuer;
   private String authorizationEndpoint;

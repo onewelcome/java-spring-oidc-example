@@ -15,7 +15,7 @@ The class `com.onegini.oidc.Application` should automatically be found and set u
 
 ## Onegini Configuration
 You'll need to properly setup your client using the Onegini Admin panel before you can begin testing.
-Refer to the [OpenID Connect documentation](https://docs.onegini.com/msp/5.0/token-server/topics/oidc/index.html). 
+Refer to the [OpenID Connect documentation](https://docs.onegini.com/msp/6.0/token-server/topics/oidc/index.html). 
 
 The Web client must support the following scopes:
   * openid
@@ -27,7 +27,7 @@ The Onegini Token Server only redirects to preconfigured endpoints after login o
   
 ### Configuring ID Token Encryption
 The Onegini Token Server supports encryption of the ID token to provide confidentiality of the claims. It can be configured by providing a JWKS endpoint and 
-choosing an encryption method in [OpenID Connect configuration](https://docs.onegini.com/msp/5.0/token-server/topics/web-clients/web-client-configuration.html#enabling-openid-connect-capability):
+choosing an encryption method in [OpenID Connect configuration](https://docs.onegini.com/msp/6.0/token-server/topics/web-clients/web-client-configuration.html#enabling-openid-connect-capability):
   * Encryption method: select one of encryption method that will be used to encrypt the ID Token.
   * JWKS URI: An endpoint that returns a list of public keys for encryption purposes. In this example it is exposed at 
   `http://localhost:8080/.well-known/jwks.json`. These keys typically would be stored in your database and would not change frequently. This example generates 
@@ -56,7 +56,7 @@ onegini.oidc.idTokenEncryptionEnabled=true
 
 ## Run and test
 Run the example via the Run configuration in IntelliJ or via the command line: `mvn spring-boot:run`. The Token Server needs to be accessible to start this 
-application since it connects to the well-known-configuration endpoint during start up.
+application since it connects to the discovery endpoint during start up.
 
 Go to [http://localhost:8080](http://localhost:8080) 
 
@@ -136,11 +136,11 @@ go wrong.
 
 ### Application fails to start
 
-The RP can only start up when the Onegini Token Server is running. During the start up the RP tries to connect to the well-known-configuration endpoint of the
+The RP can only start up when the Onegini Token Server is running. During the start up the RP tries to connect to the discovery endpoint of the
 Onegini Token Server.
 
 * Check that the Onegini Token Server is running
-* Check that the property `onegini.oidc.issuer` points to the URL of that Onegini Token Server
+* Check that the property `onegini.oidc.issuer` points to the base URL of that Onegini Token Server (e.g. http://localhost:7878/oauth)
 
 ### 401 - Unauthorized during login
 

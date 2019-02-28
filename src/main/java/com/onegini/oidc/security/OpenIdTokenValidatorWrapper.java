@@ -19,7 +19,7 @@ import com.nimbusds.oauth2.sdk.id.ClientID;
 import com.nimbusds.oauth2.sdk.id.Issuer;
 import com.nimbusds.openid.connect.sdk.validators.IDTokenValidator;
 import com.onegini.oidc.config.ApplicationProperties;
-import com.onegini.oidc.model.OpenIdWellKnownConfiguration;
+import com.onegini.oidc.model.OpenIdDiscovery;
 
 /**
  * This class is mostly just a wrapper around IDTokenValidator
@@ -30,20 +30,20 @@ public class OpenIdTokenValidatorWrapper {
   @Resource
   private ApplicationProperties applicationProperties;
   @Resource
-  private OpenIdWellKnownConfiguration openIdWellKnownConfiguration;
+  private OpenIdDiscovery openIdDiscovery;
 
   void validateToken(final JWT idToken) {
     // JWT header contains the signing algorithm
     final JWSAlgorithm algorithm = (JWSAlgorithm) idToken.getHeader().getAlgorithm();
     // Get JWK Source from the .well-known/openid-configuration endpoint of the OpenID Connect provider (Onegini Token Server)
-    final String jwksUri = openIdWellKnownConfiguration.getJwksUri();
+    final String jwksUri = openIdDiscovery.getJwksUri();
     try {
       final JWKSource<SecurityContext> jwkSource = new RemoteJWKSet<>(new URL(jwksUri));
       final JWSKeySelector jwsKeySelector = new JWSVerificationKeySelector<>(algorithm, jwkSource);
       final IDTokenValidator idTokenValidator = new IDTokenValidator(new Issuer(applicationProperties.getIssuer()),
           new ClientID(applicationProperties.getClientId()), jwsKeySelector, null);
       idTokenValidator.validate(idToken, null);
-    } catch (MalformedURLException e) {
+    } catch (final MalformedURLException e) {
       throw new IllegalArgumentException("Unable to convert '" + jwksUri + "' to URL.", e);
     } catch (final Exception e) {
       throw new BadCredentialsException("idToken is not valid", e);

@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import com.onegini.oidc.model.OpenIdWellKnownConfiguration;
+import com.onegini.oidc.model.OpenIdDiscovery;
 import com.onegini.oidc.model.UserInfo;
 import lombok.extern.slf4j.Slf4j;
 
@@ -34,7 +34,7 @@ public class LogoutController {
   private static final String REDIRECT_TO_INDEX = "redirect:/";
 
   @Resource
-  private OpenIdWellKnownConfiguration openIdWellKnownConfiguration;
+  private OpenIdDiscovery openIdDiscovery;
 
   @GetMapping(PAGE_LOGOUT)
   private String logout(final HttpServletRequest request, final HttpServletResponse response, final Principal principal) {
@@ -45,7 +45,7 @@ public class LogoutController {
 
     if (userInfo != null && StringUtils.isNotBlank(userInfo.getIdToken())) {
       log.info("Has idToken {}", userInfo.getIdToken());
-      final String endSessionEndpoint = openIdWellKnownConfiguration.getEndSessionEndpoint();
+      final String endSessionEndpoint = openIdDiscovery.getEndSessionEndpoint();
       if (StringUtils.isNotBlank(endSessionEndpoint)) {
         return endOpenIdSession(userInfo, endSessionEndpoint);
       }
