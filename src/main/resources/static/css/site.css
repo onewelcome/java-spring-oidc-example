@@ -5,5 +5,9 @@
 }
 
 th[scope=row] {
-  font-weight: normal
+  font-weight: normal;
+}
+
+pre {
+  white-space: pre-wrap;
 }

@@ -3,14 +3,14 @@ package com.onegini.oidc.config;
 import javax.validation.constraints.NotBlank;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.stereotype.Component;
 import org.springframework.validation.annotation.Validated;
 
 import lombok.Getter;
 import lombok.Setter;
 
 @Validated
-@Configuration
+@Component
 @ConfigurationProperties(prefix = "onegini.oidc")
 @Getter
 @Setter
