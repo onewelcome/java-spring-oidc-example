@@ -16,7 +16,8 @@ public class OpenIdDiscovery {
   private String userinfoEndpoint;
   private Collection<String> responseTypesSupported;
   private Collection<String> subjectTypesSupported;
-  private Collection<String> idTokenSigningAlgValues;
+  private Collection<String> idTokenSigningAlgValuesSupported;
+  private Collection<String> tokenEndpointAuthMethodsSupported;
   private Collection<String> scopesSupported;
   private Collection<String> claimsSupported;
   private String checkSessionIframe;
@@ -25,5 +26,6 @@ public class OpenIdDiscovery {
   private boolean frontchannelLogoutSessionSupported;
   private Collection<String> idTokenEncryptionAlgValuesSupported;
   private Collection<String> idTokenEncryptionEncValuesSupported;
+  private Collection<String> acrValuesSupported;
 
 }
