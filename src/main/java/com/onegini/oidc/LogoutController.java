@@ -42,7 +42,7 @@ public class LogoutController {
   private CookieUtil cookieUtil;
 
   @GetMapping(PAGE_LOGOUT)
-  private String logout(final HttpServletRequest request, final HttpServletResponse response, final Principal principal) {
+  public String logout(final HttpServletRequest request, final HttpServletResponse response, final Principal principal) {
     // Fetch UserInfo before authentication is cleared
     final UserInfo userInfo = getUserInfo(principal);
 
@@ -61,7 +61,7 @@ public class LogoutController {
 
   // Called when the session frame has detected that the session at the OpenID Provider is no longer valid
   @GetMapping(PAGE_LOCAL_LOGOUT)
-  private String logoutInvalidSession(final HttpServletRequest request, final HttpServletResponse response) {
+  public String logoutInvalidSession(final HttpServletRequest request, final HttpServletResponse response) {
     endSessionInSpringSecurity(request, response);
     return REDIRECT_TO_INDEX;
   }

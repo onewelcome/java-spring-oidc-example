@@ -69,10 +69,10 @@ public class OpenIdConnectAuthenticationFilter extends AbstractAuthenticationPro
       final TokenDetails tokenDetails = getTokenDetails(jwt);
       final JWTClaimsSet jwtClaimsSet = tokenDetails.getJwtClaimsSet();
 
-      final UserInfo principal = createUserInfo(jwtClaimsSet, jwt);
       cookieUtil.setCookie(SESSION_STATE_COOKIE_NAME, (String) accessToken.getAdditionalInformation().get("sessionState"), -1, response);
       cookieUtil.setCookie(ID_TOKEN_COOKIE_NAME, idToken, -1, response);
 
+      final UserInfo principal = createUserInfo(jwtClaimsSet, jwt);
       // We do not assign authorities here, but they can be based on claims in the ID token.
       final PreAuthenticatedAuthenticationToken token = new PreAuthenticatedAuthenticationToken(principal, empty(), NO_AUTHORITIES);
       token.setDetails(tokenDetails);
@@ -88,7 +88,6 @@ public class OpenIdConnectAuthenticationFilter extends AbstractAuthenticationPro
     try {
       accessToken = oAuth2RestOperations.getAccessToken();
     } catch (final OAuth2Exception e) {
-      log.error("Could not get Access Token", e);
       throw new AccessTokenRequiredException("Could not obtain access token", details, e);
     }
     return accessToken;

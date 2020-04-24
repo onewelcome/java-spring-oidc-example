@@ -10,9 +10,6 @@ import org.springframework.security.oauth2.client.token.AccessTokenRequest;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
 
 public class OidcRestTemplate extends OAuth2RestTemplate {
-  public OidcRestTemplate(final OAuth2ProtectedResourceDetails resource) {
-    super(resource);
-  }
 
   public OidcRestTemplate(final OAuth2ProtectedResourceDetails resource, final OAuth2ClientContext context) {
     super(resource, context);
