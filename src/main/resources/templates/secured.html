@@ -71,8 +71,8 @@
     </div>
   </div>
 
-  <iframe id="rpif" class="session-frame" th:src="${origin + '/rpiframe'}"></iframe>
-  <iframe id="opif" class="session-frame" th:src="${openid_server + '/oauth/v1/checksession'}"></iframe>
+  <iframe id="rpif" class="session-frame" title="Relying party check session" th:src="${origin + '/rpiframe'}"></iframe>
+  <iframe id="opif" class="session-frame" title="OpenID provider check session" th:src="${openid_server + '/oauth/v1/checksession'}"></iframe>
 
 </th:block>
 
