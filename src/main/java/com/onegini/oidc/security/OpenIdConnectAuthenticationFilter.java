@@ -70,12 +70,10 @@ public class OpenIdConnectAuthenticationFilter extends AbstractAuthenticationPro
       final JWTClaimsSet jwtClaimsSet = tokenDetails.getJwtClaimsSet();
 
       final UserInfo principal = createUserInfo(jwtClaimsSet, jwt);
-      // We do not assign authorities here, but they can be based on claims in the ID token.
-//      final String sessionStateCookie = restTemplate.getOAuth2ClientContext().getAccessTokenRequest().get("session_state").stream().findFirst().orElse("");
       cookieUtil.setCookie(SESSION_STATE_COOKIE_NAME, (String) accessToken.getAdditionalInformation().get("sessionState"), -1, response);
       cookieUtil.setCookie(ID_TOKEN_COOKIE_NAME, idToken, -1, response);
 
-
+      // We do not assign authorities here, but they can be based on claims in the ID token.
       final PreAuthenticatedAuthenticationToken token = new PreAuthenticatedAuthenticationToken(principal, empty(), NO_AUTHORITIES);
       token.setDetails(tokenDetails);
       return token;
