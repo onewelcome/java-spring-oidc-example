@@ -11,3 +11,7 @@ th[scope=row] {
 pre {
   white-space: pre-wrap;
 }
+
+.session-frame {
+  display: none;
+}

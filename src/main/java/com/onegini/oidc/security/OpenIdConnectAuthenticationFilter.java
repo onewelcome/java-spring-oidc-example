@@ -1,5 +1,7 @@
 package com.onegini.oidc.security;
 
+import static com.onegini.oidc.CookieUtil.ID_TOKEN_COOKIE_NAME;
+import static com.onegini.oidc.CookieUtil.SESSION_STATE_COOKIE_NAME;
 import static java.util.Optional.empty;
 import static org.springframework.security.core.authority.AuthorityUtils.NO_AUTHORITIES;
 
@@ -24,6 +26,7 @@ import com.nimbusds.jwt.JWT;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.JWTParser;
 import com.nimbusds.jwt.SignedJWT;
+import com.onegini.oidc.CookieUtil;
 import com.onegini.oidc.config.ApplicationProperties;
 import com.onegini.oidc.encryption.JweDecrypterService;
 import com.onegini.oidc.model.TokenDetails;
@@ -43,6 +46,8 @@ public class OpenIdConnectAuthenticationFilter extends AbstractAuthenticationPro
   private JweDecrypterService jweDecrypterService;
   @Resource
   private ApplicationProperties applicationProperties;
+  @Resource
+  private CookieUtil cookieUtil;
 
   protected OpenIdConnectAuthenticationFilter(final String defaultFilterProcessesUrl) {
     super(defaultFilterProcessesUrl);
@@ -66,6 +71,11 @@ public class OpenIdConnectAuthenticationFilter extends AbstractAuthenticationPro
 
       final UserInfo principal = createUserInfo(jwtClaimsSet, jwt);
       // We do not assign authorities here, but they can be based on claims in the ID token.
+//      final String sessionStateCookie = restTemplate.getOAuth2ClientContext().getAccessTokenRequest().get("session_state").stream().findFirst().orElse("");
+      cookieUtil.setCookie(SESSION_STATE_COOKIE_NAME, (String) accessToken.getAdditionalInformation().get("sessionState"), -1, response);
+      cookieUtil.setCookie(ID_TOKEN_COOKIE_NAME, idToken, -1, response);
+
+
       final PreAuthenticatedAuthenticationToken token = new PreAuthenticatedAuthenticationToken(principal, empty(), NO_AUTHORITIES);
       token.setDetails(tokenDetails);
       return token;
