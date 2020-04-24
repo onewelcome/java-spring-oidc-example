@@ -12,7 +12,6 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.security.oauth2.client.OAuth2ClientContext;
 import org.springframework.security.oauth2.client.OAuth2RestOperations;
-import org.springframework.security.oauth2.client.OAuth2RestTemplate;
 import org.springframework.security.oauth2.client.resource.OAuth2ProtectedResourceDetails;
 import org.springframework.security.oauth2.client.token.grant.code.AuthorizationCodeResourceDetails;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableOAuth2Client;
@@ -59,6 +58,6 @@ public class OAuth2Client {
   @Bean
   @Scope(value = "session", proxyMode = ScopedProxyMode.INTERFACES)
   public OAuth2RestOperations oAuth2RestOperations(final OpenIdDiscovery configuration) {
-    return new OAuth2RestTemplate(protectedResourceDetails(configuration), oAuth2ClientContext);
+    return new OidcRestTemplate(protectedResourceDetails(configuration), oAuth2ClientContext);
   }
 }

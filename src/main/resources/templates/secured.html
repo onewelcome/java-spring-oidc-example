@@ -13,6 +13,10 @@
       <div class="page-header">
         <h1>Secured page</h1>
       </div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-sm-12">
 
       <dl th:if="${userInfo}">
         <dt>User identifier</dt>
@@ -31,28 +35,45 @@
         </dd>
       </dl>
 
-      <div class="table-responsive" th:if="${jwtClaimsSet}">
-        <table class="table">
-          <caption>Your claims inside the id token:</caption>
-          <thead>
-          <tr>
-            <th scope="col">Claim</th>
-            <th scope="col">Value</th>
-          </tr>
-          </thead>
-          <tbody>
-          <th:block th:each="claim : ${jwtClaimsSet.claims}">
+      <th:block th:if="${jwtClaimsSet}">
+        <h2 id="claim-caption">Claims inside the id token</h2>
+        <div class="table-responsive">
+          <table class="table" aria-labelledby="claim-caption">
+            <thead>
             <tr>
-              <td th:text="${claim.key}"></td>
-              <td th:text="${claim.value}"></td>
+              <th scope="col">Claim</th>
+              <th scope="col">Value</th>
             </tr>
-          </th:block>
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+            <th:block th:each="claim : ${jwtClaimsSet.claims}">
+              <tr>
+                <td th:text="${claim.key}"></td>
+                <td th:text="${claim.value}"></td>
+              </tr>
+            </th:block>
+            </tbody>
+          </table>
+        </div>
 
-      </div>
+      </th:block>
     </div>
   </div>
+  <div class="row">
+    <div class="col-sm-12">
+      <h2>Logout</h2>
+      <p>
+        <a th:href="@{/logout-local}">Local logout</a>. This ends the session in Spring Security.
+      </p>
+      <p>
+        <a th:href="@{/logout}">OpenID Provider logout</a>. This ends the session at the OpenID Provider and the local session in Spring Security.
+      </p>
+    </div>
+  </div>
+
+  <iframe id="rpif" class="session-frame" title="Relying party check session" th:src="${origin + '/rpiframe'}"></iframe>
+  <iframe id="opif" class="session-frame" title="OpenID provider check session" th:src="${openid_server + '/oauth/v1/checksession'}"></iframe>
+
 </th:block>
 
 </html>

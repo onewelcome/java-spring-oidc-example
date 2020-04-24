@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org" th:lang-xmllang="en">
+<head>
+  <title>Relying party check session</title>
+</head>
+<body>
+<script th:inline="javascript">
+  /*<![CDATA[*/
+  var targetOP = /*[[${openid_server}]]*/'';
+  window.addEventListener("message", receiveMessage, false);
+
+  function startChecking() {
+    checkStatus();
+    // Check status every 10 seconds
+    setInterval("checkStatus()", 1000*10);
+  }
+
+  function getCookieValue(cookieName) {
+    var name = cookieName + "=";
+    var cookies = document.cookie.split(';');
+    if (!cookies) {
+      return null;
+    }
+    for (var i = 0; i < cookies.length; i++) {
+      var cookie = cookies[i].trim();
+      if (cookie.indexOf(name) === 0) {
+        return cookie.substring(name.length, cookie.length);
+      }
+    }
+    return null;
+  }
+
+  function checkStatus() {
+    var client =  /*[[${clientId}]]*/'';
+    var sessionState = getCookieValue("session_state");
+    var text = client + " " + sessionState;
+    var iframe = window.parent.document.getElementById("opif");
+    iframe.contentWindow.postMessage(text, targetOP);
+  }
+
+  function receiveMessage(event) {
+    if (event.origin !== targetOP) {
+      // Origin did not come from the OP; this message must be rejected
+      return;
+    }
+    if (event.data === "unchanged") {
+      // User is still logged in to the OP
+      console.log("still logged in");
+    } else {
+      // User has logged out of the OP
+      console.log("logged out!");
+      var origin = /*[[${origin}]]*/'';
+      window.parent.location.href = origin + '/logout-local';
+    }
+  }
+  window.onload = function () {
+    //Give the opif a bit of time to load properly
+    setTimeout(function() {
+      startChecking();
+    }, 5000);
+  }
+  /*]]>*/
+</script>
+</body>
+</html>

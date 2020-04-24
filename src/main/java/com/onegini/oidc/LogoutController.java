@@ -1,5 +1,7 @@
 package com.onegini.oidc;
 
+import static com.onegini.oidc.CookieUtil.ID_TOKEN_COOKIE_NAME;
+import static com.onegini.oidc.CookieUtil.SESSION_STATE_COOKIE_NAME;
 import static org.springframework.web.servlet.view.UrlBasedViewResolver.REDIRECT_URL_PREFIX;
 
 import java.security.Principal;
@@ -28,16 +30,19 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class LogoutController {
   public static final String PAGE_LOGOUT = "/logout";
+  public static final String PAGE_LOCAL_LOGOUT = "/logout-local";
+  public static final String PAGE_SIGNOUT_CALLBACK_OIDC = "/signout-callback-oidc";
   private static final String PARAM_POST_LOGOUT_REDIRECT_URI = "post_logout_redirect_uri";
   private static final String PARAM_ID_TOKEN_HINT = "id_token_hint";
-  private static final String PAGE_SIGNOUT_CALLBACK_OIDC = "/signout-callback-oidc";
   private static final String REDIRECT_TO_INDEX = "redirect:/";
 
   @Resource
   private OpenIdDiscovery openIdDiscovery;
+  @Resource
+  private CookieUtil cookieUtil;
 
   @GetMapping(PAGE_LOGOUT)
-  private String logout(final HttpServletRequest request, final HttpServletResponse response, final Principal principal) {
+  public String logout(final HttpServletRequest request, final HttpServletResponse response, final Principal principal) {
     // Fetch UserInfo before authentication is cleared
     final UserInfo userInfo = getUserInfo(principal);
 
@@ -51,6 +56,13 @@ public class LogoutController {
       }
     }
 
+    return REDIRECT_TO_INDEX;
+  }
+
+  // Called when the session frame has detected that the session at the OpenID Provider is no longer valid
+  @GetMapping(PAGE_LOCAL_LOGOUT)
+  public String logoutInvalidSession(final HttpServletRequest request, final HttpServletResponse response) {
+    endSessionInSpringSecurity(request, response);
     return REDIRECT_TO_INDEX;
   }
 
@@ -70,6 +82,9 @@ public class LogoutController {
 
   private void endSessionInSpringSecurity(final HttpServletRequest request, final HttpServletResponse response) {
     final Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+    cookieUtil.expireCookie(SESSION_STATE_COOKIE_NAME, response);
+    cookieUtil.expireCookie(ID_TOKEN_COOKIE_NAME, response);
+
     if (auth == null) {
       return;
     }
