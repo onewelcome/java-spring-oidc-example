@@ -9,7 +9,7 @@ To get the example up and running, first you'll need to clone it:
 
 ### IntelliJ
 
-Go to `File->Open` and open the file `java-spring-oidc-example/pom.xml`, open it as a project.
+Go to `File -> Open` and open the file `java-spring-oidc-example/pom.xml`, open it as a project.
 
 The class `com.onegini.oidc.Application` should automatically be found and set up a run configuration for you so you can run it within IntelliJ.
 
