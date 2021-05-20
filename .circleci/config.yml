@@ -4,18 +4,11 @@ orbs:
   onegini-build: onegini/onegini-build@2
 
 shared: &shared
-  component_type: library
+  component_type: application
   context: dev-context
   executor:
     name: onegini-build/maven-builder
     tag: "11.0"
-
-filter_all_branches_and_tags: &filter_all_branches_and_tags
-  filters:
-    branches:
-      only: /.*/
-    tags:
-      only: /.*/
 
 workflows:
   version: 2
@@ -23,4 +16,3 @@ workflows:
     jobs:
       - onegini-build/build-install:
           <<: *shared
-          <<: *filter_all_branches_and_tags
