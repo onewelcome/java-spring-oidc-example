@@ -21,7 +21,6 @@ import org.springframework.test.web.client.ExpectedCount;
 import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.web.client.RestTemplate;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nimbusds.jose.util.IOUtils;
 import lombok.SneakyThrows;
 
@@ -42,6 +41,11 @@ class ApplicationTest {
     mockOpenIdConfiguration();
   }
 
+  @Test
+  void should_start_application_context() {
+    assertThat(controller).isNotNull();
+  }
+
   @SneakyThrows
   private void mockOpenIdConfiguration() {
     final ClassPathResource resource = new ClassPathResource("openid-configuration.json");
@@ -56,11 +60,6 @@ class ApplicationTest {
               .body(openidConfiguration)
           );
     }
-  }
-
-  @Test
-  void should_start_application_context() {
-    assertThat(controller).isNotNull();
   }
 
 }
