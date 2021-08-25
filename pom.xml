@@ -50,7 +50,7 @@
     <dependency>
       <groupId>com.nimbusds</groupId>
       <artifactId>oauth2-oidc-sdk</artifactId>
-      <version>9.12</version>
+      <version>9.15</version>
     </dependency>
     <dependency>
       <groupId>org.projectlombok</groupId>
