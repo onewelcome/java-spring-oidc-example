@@ -48,6 +48,5 @@ public class OpenIdTokenValidatorWrapper {
     } catch (final Exception e) {
       throw new BadCredentialsException("idToken is not valid", e);
     }
-
   }
 }

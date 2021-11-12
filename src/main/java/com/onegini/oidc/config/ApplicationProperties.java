@@ -1,6 +1,6 @@
 package com.onegini.oidc.config;
 
-import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotEmpty;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
@@ -15,11 +15,11 @@ import lombok.Setter;
 @Getter
 @Setter
 public class ApplicationProperties {
-  @NotBlank
+  @NotEmpty
   private String clientId;
-  @NotBlank
+  @NotEmpty
   private String clientSecret;
-  @NotBlank
+  @NotEmpty
   private String issuer;
   private boolean idTokenEncryptionEnabled;
 }

@@ -5,6 +5,7 @@ import static com.onegini.oidc.CookieUtil.SESSION_STATE_COOKIE_NAME;
 import static org.springframework.web.servlet.view.UrlBasedViewResolver.REDIRECT_URL_PREFIX;
 
 import java.security.Principal;
+import java.util.Optional;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -35,6 +36,7 @@ public class LogoutController {
   private static final String PARAM_POST_LOGOUT_REDIRECT_URI = "post_logout_redirect_uri";
   private static final String PARAM_ID_TOKEN_HINT = "id_token_hint";
   private static final String REDIRECT_TO_INDEX = "redirect:/";
+  private static final String REDIRECT_TO_SECURED = "redirect:/secured";
 
   @Resource
   private OpenIdDiscovery openIdDiscovery;
@@ -63,6 +65,9 @@ public class LogoutController {
   @GetMapping(PAGE_LOCAL_LOGOUT)
   public String logoutInvalidSession(final HttpServletRequest request, final HttpServletResponse response) {
     endSessionInSpringSecurity(request, response);
+    if (Optional.ofNullable(request.getParameter("relogin")).isPresent()) {
+      return REDIRECT_TO_SECURED;
+    }
     return REDIRECT_TO_INDEX;
   }
 

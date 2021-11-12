@@ -4,6 +4,8 @@ import static com.nimbusds.jose.JWEAlgorithm.ECDH_ES;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static javax.servlet.http.HttpServletResponse.SC_OK;
 
+import java.util.Map;
+
 import javax.annotation.Resource;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -16,7 +18,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.nimbusds.jose.JWEAlgorithm;
 import com.onegini.oidc.encryption.JwkSetProvider;
 import com.onegini.oidc.model.OpenIdDiscovery;
-import net.minidev.json.JSONObject;
 
 @RestController
 @ConditionalOnProperty(value = "onegini.oidc.idTokenEncryptionEnabled", havingValue = "true")
@@ -33,10 +34,9 @@ public class JweWellKnownJwksController {
   private OpenIdDiscovery openIdDiscovery;
 
   @GetMapping(JWKS_KEYS_PATH)
-  public ResponseEntity<JSONObject> getJwks() {
+  public ResponseEntity<Map<String, Object>> getJwks() {
     final JWEAlgorithm chosenAlgorithm = ASYMMETRIC_ENCRYPTION_ALGORITHM;
     validateAlgorithmSupport(chosenAlgorithm);
-    jwkSetProvider.getPublicJWKS(chosenAlgorithm);
 
     return ResponseEntity.status(SC_OK)
         .cacheControl(CacheControl.maxAge(MAX_AGE, SECONDS))
@@ -52,5 +52,4 @@ public class JweWellKnownJwksController {
           StringUtils.collectionToCommaDelimitedString(openIdDiscovery.getIdTokenEncryptionAlgValuesSupported()));
     }
   }
-
 }

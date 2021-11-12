@@ -11,7 +11,6 @@ import com.google.common.collect.Lists;
 import com.nimbusds.jose.JWEAlgorithm;
 import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.JWKSet;
-import net.minidev.json.JSONObject;
 
 @Service
 public class JwkSetProvider {
@@ -21,7 +20,7 @@ public class JwkSetProvider {
 
   private final Map<String, JWKSet> jwksSetMapCache = new HashMap<>();
 
-  public JSONObject getPublicJWKS(final JWEAlgorithm jweAlgorithm) {
+  public Map<String, Object> getPublicJWKS(final JWEAlgorithm jweAlgorithm) {
     return getJWKSet(jweAlgorithm).toJSONObject(true);
   }
 
@@ -41,5 +40,4 @@ public class JwkSetProvider {
     final JWK jwk2 = jweKeyGenerator.generateKey(jweAlgorithm);
     return new JWKSet(Lists.newArrayList(jwk1, jwk2));
   }
-
 }

@@ -51,7 +51,7 @@
       // User has logged out of the OP
       console.log("logged out!");
       var origin = /*[[${origin}]]*/'';
-      window.parent.location.href = origin + '/logout-local';
+      window.parent.location.href = origin + '/logout-local?relogin=true';
     }
   }
   window.onload = function () {
