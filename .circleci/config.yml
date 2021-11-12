@@ -1,0 +1,18 @@
+version: 2.1
+
+orbs:
+  onegini-build: onegini/onegini-build@2
+
+shared: &shared
+  component_type: application
+  context: dev-context
+  executor:
+    name: onegini-build/maven-builder
+    tag: "11.0"
+
+workflows:
+  version: 2
+  library-workflow:
+    jobs:
+      - onegini-build/build-install:
+          <<: *shared
