@@ -14,9 +14,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.nimbusds.jose.JWEAlgorithm;
+import com.nimbusds.jose.jwk.JWKSet;
 import com.onegini.oidc.encryption.JwkSetProvider;
 import com.onegini.oidc.model.OpenIdDiscovery;
-import net.minidev.json.JSONObject;
 
 @RestController
 @ConditionalOnProperty(value = "onegini.oidc.idTokenEncryptionEnabled", havingValue = "true")
@@ -33,7 +33,7 @@ public class JweWellKnownJwksController {
   private OpenIdDiscovery openIdDiscovery;
 
   @GetMapping(JWKS_KEYS_PATH)
-  public ResponseEntity<JSONObject> getJwks() {
+  public ResponseEntity<JWKSet> getJwks() {
     final JWEAlgorithm chosenAlgorithm = ASYMMETRIC_ENCRYPTION_ALGORITHM;
     validateAlgorithmSupport(chosenAlgorithm);
     jwkSetProvider.getPublicJWKS(chosenAlgorithm);
