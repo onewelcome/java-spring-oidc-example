@@ -21,7 +21,7 @@ import com.onegini.oidc.model.OpenIdDiscovery;
 @RestController
 @ConditionalOnProperty(value = "onegini.oidc.idTokenEncryptionEnabled", havingValue = "true")
 public class JweWellKnownJwksController {
-  private static final String JWKS_KEYS_PATH = "/.well-known/jwks.json"; // NOSONAR
+  public static final String JWKS_KEYS_PATH = "/.well-known/jwks.json"; // NOSONAR
   private static final JWEAlgorithm ASYMMETRIC_ENCRYPTION_ALGORITHM = ECDH_ES;
   //Configure this value based on your key rotation plan. The server will cache this response based on this value. Keys should be persisted
   //they are not changing at startup.
