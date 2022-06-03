@@ -1,6 +1,7 @@
 package com.onegini.oidc.security;
 
 import static com.onegini.oidc.IndexController.PAGE_INDEX;
+import static com.onegini.oidc.JweWellKnownJwksController.JWKS_KEYS_PATH;
 import static com.onegini.oidc.LogoutController.PAGE_LOGOUT;
 import static com.onegini.oidc.LogoutController.PAGE_LOCAL_LOGOUT;
 import static com.onegini.oidc.LogoutController.PAGE_SIGNOUT_CALLBACK_OIDC;
@@ -51,7 +52,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         .exceptionHandling().authenticationEntryPoint(authenticationEntryPoint())
         .and()
         .authorizeRequests()
-        .antMatchers(PAGE_INDEX, PAGE_LOGOUT, PAGE_LOCAL_LOGOUT, PAGE_SIGNOUT_CALLBACK_OIDC).permitAll()
+        .antMatchers(PAGE_INDEX, PAGE_LOGOUT, PAGE_LOCAL_LOGOUT, PAGE_SIGNOUT_CALLBACK_OIDC, JWKS_KEYS_PATH).permitAll()
         .antMatchers("/static/**", "/favicon.ico").permitAll()
         .anyRequest().authenticated()
         .and()
